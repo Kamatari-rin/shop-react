@@ -6,7 +6,8 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      - cart-service
+      - product-detail
     networks:
       - app-network
 

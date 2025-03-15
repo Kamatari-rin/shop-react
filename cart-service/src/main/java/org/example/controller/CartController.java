@@ -19,35 +19,35 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<CartDTO> getCart(@PathVariable UUID userId) {
+    @GetMapping
+    public ResponseEntity<CartDTO> getCart(@RequestHeader("X-User-Id") UUID userId) {
         CartDTO cart = cartService.getCartByUserId(userId);
         return ResponseEntity.ok(cart);
     }
 
-    @PostMapping("/{userId}/items")
-    public ResponseEntity<CartDTO> addItemToCart(@PathVariable UUID userId,
+    @PostMapping("/items")
+    public ResponseEntity<CartDTO> addItemToCart(@RequestHeader("X-User-Id") UUID userId,
                                                  @Valid @RequestBody CartItemRequestDTO request) {
         CartDTO updatedCart = cartService.addItemToCart(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(updatedCart);
     }
 
-    @DeleteMapping("/{userId}/items/{productId}")
-    public ResponseEntity<CartDTO> removeItemFromCart(@PathVariable UUID userId,
+    @DeleteMapping("/items/{productId}")
+    public ResponseEntity<CartDTO> removeItemFromCart(@RequestHeader("X-User-Id") UUID userId,
                                                       @PathVariable Integer productId) {
         CartDTO updatedCart = cartService.removeItemFromCart(userId, productId);
         return ResponseEntity.ok(updatedCart);
     }
 
-    @PutMapping("/{userId}/items")
-    public ResponseEntity<CartDTO> updateItemQuantity(@PathVariable UUID userId,
+    @PutMapping("/items")
+    public ResponseEntity<CartDTO> updateItemQuantity(@RequestHeader("X-User-Id") UUID userId,
                                                       @Valid @RequestBody CartItemRequestDTO request) {
         CartDTO updatedCart = cartService.updateItemQuantity(userId, request);
         return ResponseEntity.ok(updatedCart);
     }
 
-    @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> clearCart(@PathVariable UUID userId) {
+    @DeleteMapping
+    public ResponseEntity<Void> clearCart(@RequestHeader("X-User-Id") UUID userId) {
         cartService.clearCart(userId);
         return ResponseEntity.noContent().build();
     }
