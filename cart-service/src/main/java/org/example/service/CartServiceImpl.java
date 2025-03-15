@@ -49,22 +49,22 @@ public class CartServiceImpl implements CartService {
         validateQuantity(request.quantity());
 
         Cart cart = getOrCreateCart(userId);
-        Optional<CartItem> existingItem = cartItemRepository.findByCartIdAndProductId(cart.getId(), request.productId());
+        CartItem item = cartItemRepository.findByCartIdAndProductId(cart.getId(), request.productId())
+                .map(existing -> {
+                    existing.setQuantity(existing.getQuantity() + request.quantity());
+                    return existing;
+                })
+                .orElseGet(() -> {
+                    CartItem newItem = new CartItem();
+                    newItem.setCartId(cart.getId());
+                    newItem.setProductId(request.productId());
+                    newItem.setQuantity(request.quantity());
+                    ProductDTO product = productClient.getProductById(request.productId());
+                    newItem.setPriceAtTime(product != null ? product.price() : null);
+                    return newItem;
+                });
 
-        CartItem item;
-        if (existingItem.isPresent()) {
-            item = existingItem.get();
-            item.setQuantity(item.getQuantity() + request.quantity());
-        } else {
-            item = new CartItem();
-            item.setCartId(cart.getId());
-            item.setProductId(request.productId());
-            item.setQuantity(request.quantity());
-            ProductDTO product = productClient.getProductById(request.productId());
-            item.setPriceAtTime(product != null ? product.price() : null);
-        }
         cartItemRepository.save(item);
-
         return getCartByUserId(userId);
     }
 
@@ -82,8 +82,12 @@ public class CartServiceImpl implements CartService {
 
         Cart cart = getOrCreateCart(userId);
         CartItem item = cartItemRepository.findByCartIdAndProductId(cart.getId(), request.productId())
+                .map(existing -> {
+                    existing.setQuantity(request.quantity());
+                    return existing;
+                })
                 .orElseThrow(() -> new CartOperationException("Item with productId " + request.productId() + " not found in cart"));
-        item.setQuantity(request.quantity());
+
         cartItemRepository.save(item);
         return getCartByUserId(userId);
     }
