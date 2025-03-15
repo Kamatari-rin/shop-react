@@ -1,0 +1,13 @@
+rootProject.name = 'yandex-shop'
+include 'user-service'
+include 'product-catalog'
+include 'product-detail'
+include 'cart-service'
+include 'orders-list'
+include 'order-detail'
+include 'purchase-service'
+include 'api-gateway'
+include 'db-migrations'
+include 'admin-server'
+include 'common'
+
