@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="001_create_products_table" author="admin">
+        <createTable tableName="products">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="price" type="NUMERIC(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image_url" type="VARCHAR(255)"/>
+            <column name="category_id" type="INTEGER"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <createTable tableName="categories">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints unique="true" nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="products" indexName="idx_products_name">
+            <column name="name"/>
+        </createIndex>
+
+        <createIndex tableName="products" indexName="idx_products_price">
+            <column name="price"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="002_insert_test_products" author="test">
+        <insert tableName="categories">
+            <column name="id" value="1"/>
+            <column name="name" value="Electronics"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" value="1"/>
+            <column name="name" value="Smartphone"/>
+            <column name="description" value="A high-end smartphone"/>
+            <column name="price" value="699.99"/>
+            <column name="image_url" value="http://example.com/images/smartphone.jpg"/>
+            <column name="category_id" value="1"/>
+            <column name="created_at" value="2025-03-17T10:00:00"/>
+            <column name="updated_at" value="2025-03-17T10:00:00"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" value="2"/>
+            <column name="name" value="Laptop"/>
+            <column name="description" value="A powerful laptop"/>
+            <column name="price" value="1299.99"/>
+            <column name="image_url" value="http://example.com/images/laptop.jpg"/>
+            <column name="category_id" value="1"/>
+            <column name="created_at" value="2025-03-17T10:00:00"/>
+            <column name="updated_at" value="2025-03-17T10:00:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

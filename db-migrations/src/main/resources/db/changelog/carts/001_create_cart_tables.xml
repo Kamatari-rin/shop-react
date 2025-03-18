@@ -42,4 +42,20 @@
             <column name="product_id"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="002_insert_test_cart" author="test">
+        <insert tableName="carts">
+            <column name="id" value="1"/>
+            <column name="user_id" value="550e8400-e29b-41d4-a716-446655440000"/>
+            <column name="created_at" value="2025-03-17T10:00:00"/>
+        </insert>
+
+        <insert tableName="cart_items">
+            <column name="id" value="1"/>
+            <column name="cart_id" value="1"/>
+            <column name="product_id" value="1"/>
+            <column name="quantity" value="2"/>
+            <column name="price_at_time" value="699.99"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

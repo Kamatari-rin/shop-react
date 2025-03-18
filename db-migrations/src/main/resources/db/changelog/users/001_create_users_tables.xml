@@ -28,4 +28,16 @@
             </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="002_insert_test_users" author="test">
+        <insert tableName="users">
+            <column name="id" value="550e8400-e29b-41d4-a716-446655440000"/>
+            <column name="username" value="testuser"/>
+            <column name="email" value="test@example.com"/>
+            <column name="password" value="$2a$10$XURP2X3p9gW..W0N.D0t1eJ7Q83QzOvK6A0e7oE4eX8b7e8g7f8g9"/> <!-- bcrypt "password123" -->
+            <column name="role" value="USER"/>
+            <column name="created_at" value="2025-03-17T10:00:00"/>
+            <column name="updated_at" value="2025-03-17T10:00:00"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>
