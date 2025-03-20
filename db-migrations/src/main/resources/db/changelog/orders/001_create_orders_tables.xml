@@ -51,4 +51,20 @@
             <column name="product_id"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="002_insert_test_orders" author="admin">
+        <insert tableName="orders">
+            <column name="user_id" value="550e8400-e29b-41d4-a716-446655440000"/>
+            <column name="order_date" value="2025-03-18 12:00:00"/>
+            <column name="status" value="PENDING"/>
+            <column name="total_amount" value="1399.98"/>
+        </insert>
+        <insert tableName="order_items">
+            <column name="order_id" value="1"/>
+            <column name="product_id" value="1"/>
+            <column name="quantity" value="2"/>
+            <column name="price" value="699.99"/>
+            <column name="image_url" value="http://example.com/images/smartphone.jpg"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>
