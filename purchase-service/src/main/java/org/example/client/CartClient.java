@@ -26,4 +26,11 @@ public class CartClient {
         HttpEntity<String> entity = new HttpEntity<>(headers);
         return restTemplate.exchange(cartServiceUrl, HttpMethod.GET, entity, CartDTO.class).getBody();
     }
+
+    public void clearCart(UUID userId) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-User-Id", userId.toString());
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        restTemplate.exchange(cartServiceUrl, HttpMethod.DELETE, entity, Void.class);
+    }
 }

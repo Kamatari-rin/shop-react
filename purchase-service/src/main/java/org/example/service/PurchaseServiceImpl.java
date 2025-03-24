@@ -2,10 +2,9 @@ package org.example.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.client.CartClient;
+import org.example.client.OrderClient;
 import org.example.client.ProductClient;
-import org.example.dto.CartDTO;
-import org.example.dto.ProductDetailDTO;
-import org.example.dto.PurchaseResponseDTO;
+import org.example.dto.*;
 import org.example.exception.PurchaseException;
 import org.example.model.Purchase;
 import org.example.repository.PurchaseRepository;
@@ -20,6 +19,7 @@ import java.util.UUID;
 public class PurchaseServiceImpl implements PurchaseService {
     private final CartClient cartClient;
     private final ProductClient productClient;
+    private final OrderClient orderClient;
     private final PurchaseRepository purchaseRepository;
 
     @Override
@@ -28,20 +28,18 @@ public class PurchaseServiceImpl implements PurchaseService {
         CartDTO cart = getValidatedCart(userId);
         validatePrices(cart);
 
-        // Заглушка для orderId
-        Integer orderId = generateOrderId();
+        OrderDTO order = createOrder(cart);
 
         Purchase purchase = Purchase.builder()
-                .orderId(orderId)
+                .orderId(order.id())
                 .userId(userId)
                 .paymentStatus("PENDING")
                 .transactionDate(LocalDateTime.now())
                 .details("Payment via card")
                 .build();
-
         purchaseRepository.save(purchase);
 
-        // clearCart(userId);
+        clearCart(userId);
 
         return new PurchaseResponseDTO(
                 purchase.getOrderId(),
@@ -69,12 +67,24 @@ public class PurchaseServiceImpl implements PurchaseService {
         });
     }
 
-    private Integer generateOrderId() {
-        // Заглушка, создание заказа в ordersdb
-        return 1;
+    private OrderDTO createOrder(CartDTO cart) {
+        CreateOrderRequestDTO request = new CreateOrderRequestDTO(
+                cart.userId(),
+                LocalDateTime.now(),
+                "PENDING",
+                cart.totalAmount(),
+                cart.items().stream()
+                        .map(item -> new CreateOrderRequestDTO.OrderItemDTO(
+                                item.productId(),
+                                item.quantity(),
+                                item.priceAtTime(),
+                                item.imageUrl()))
+                        .toList()
+        );
+        return orderClient.createOrder(request);
     }
 
-    // private void clearCart(UUID userId) {
-    //     cartClient.clearCart(userId);
-    // }
+    private void clearCart(UUID userId) {
+        cartClient.clearCart(userId);
+    }
 }

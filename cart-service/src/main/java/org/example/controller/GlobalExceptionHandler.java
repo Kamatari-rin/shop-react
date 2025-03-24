@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import org.example.dto.ApiError;
+import org.example.exception.CartNotFoundException;
 import org.example.exception.CartOperationException;
 import org.example.exception.ProductClientException;
 import org.springframework.http.HttpStatus;
@@ -9,9 +10,20 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.ServletWebRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(CartNotFoundException.class)
+    public ResponseEntity<ApiError> handleCartNotFound(CartNotFoundException ex, ServletWebRequest request) {
+        ApiError error = ApiError.of(
+                HttpStatus.NOT_FOUND.value(),
+                "Cart Not Found Error",
+                ex.getMessage(),
+                request.getRequest().getRequestURI());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler(ProductClientException.class)
     public ResponseEntity<ApiError> handleProductClientException(ProductClientException ex, HttpServletRequest request) {

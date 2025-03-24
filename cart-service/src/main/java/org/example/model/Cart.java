@@ -1,16 +1,21 @@
 package org.example.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.example.listener.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
 @Table(name = "carts")
 @EntityListeners(AuditingEntityListener.class)
-@Data
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,4 +26,7 @@ public class Cart {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
+    private List<CartItem> items;
 }

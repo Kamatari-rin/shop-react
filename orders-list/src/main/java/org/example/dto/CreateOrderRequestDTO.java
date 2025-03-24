@@ -5,19 +5,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public record CartDTO(
-        Integer id,
+public record CreateOrderRequestDTO(
         UUID userId,
-        List<CartItemDTO> items,
+        LocalDateTime orderDate,
+        String status,
         BigDecimal totalAmount,
-        LocalDateTime createdAt
+        List<OrderItemDTO> items
 ) {
-    public record CartItemDTO(
-            Integer id,
+    public record OrderItemDTO(
             Integer productId,
-            String productName,
-            BigDecimal priceAtTime,
             Integer quantity,
+            BigDecimal price,
             String imageUrl
     ) {}
 }

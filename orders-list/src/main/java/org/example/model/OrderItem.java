@@ -6,20 +6,20 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "cart_items")
+@Table(name = "order_items")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartItem {
+public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
-    private Cart cart;
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
 
     @Column(name = "product_id", nullable = false)
     private Integer productId;
@@ -27,6 +27,9 @@ public class CartItem {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(name = "price_at_time")
-    private BigDecimal priceAtTime;
+    @Column(nullable = false)
+    private BigDecimal price;
+
+    @Column(name = "image_url")
+    private String imageUrl;
 }
