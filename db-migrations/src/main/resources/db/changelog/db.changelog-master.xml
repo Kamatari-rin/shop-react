@@ -15,4 +15,6 @@
 
     <include file="purchase/changelog-purchase.xml" relativeToChangelogFile="true"/>
 
+    <include file="testdata/changelog-testdata.xml" relativeToChangelogFile="true"/>
+
 </databaseChangeLog>

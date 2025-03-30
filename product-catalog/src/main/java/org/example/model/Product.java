@@ -1,0 +1,36 @@
+package org.example.model;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "products")
+@Getter
+@Setter
+public class Product {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "price", nullable = false)
+    private BigDecimal price;
+
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Column(name = "category_id")
+    private Integer categoryId;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+}

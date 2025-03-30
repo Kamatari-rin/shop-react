@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
+
+    <changeSet id="002_insert_test_data" author="test">
+        <!-- Тестовый пользователь -->
+        <insert tableName="users">
+            <column name="id" value="550e8400-e29b-41d4-a716-446655440000"/>
+            <column name="username" value="testuser"/>
+            <column name="email" value="test@example.com"/>
+            <column name="password" value="$2a$10$XURP2X3p9gW..W0N.D0t1eJ7Q83QzOvK6A0e7oE4eX8b7e8g7f8g9"/> <!-- bcrypt "password123" -->
+            <column name="role" value="USER"/>
+            <column name="created_at" value="2025-03-17T10:00:00"/>
+            <column name="updated_at" value="2025-03-17T10:00:00"/>
+        </insert>
+
+        <!-- Тестовая категория -->
+        <insert tableName="categories">
+            <column name="id" value="1"/>
+            <column name="name" value="Electronics"/>
+        </insert>
+
+        <!-- Тестовые товары -->
+        <insert tableName="products">
+            <column name="id" value="1"/>
+            <column name="name" value="Smartphone"/>
+            <column name="description" value="A high-end smartphone"/>
+            <column name="price" value="699.99"/>
+            <column name="image_url" value="http://example.com/images/smartphone.jpg"/>
+            <column name="category_id" value="1"/>
+            <column name="created_at" value="2025-03-17T10:00:00"/>
+            <column name="updated_at" value="2025-03-17T10:00:00"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" value="2"/>
+            <column name="name" value="Laptop"/>
+            <column name="description" value="A powerful laptop"/>
+            <column name="price" value="1299.99"/>
+            <column name="image_url" value="http://example.com/images/laptop.jpg"/>
+            <column name="category_id" value="1"/>
+            <column name="created_at" value="2025-03-17T10:00:00"/>
+            <column name="updated_at" value="2025-03-17T10:00:00"/>
+        </insert>
+    </changeSet>
+</databaseChangeLog>

@@ -40,4 +40,33 @@
             <column name="price"/>
         </createIndex>
     </changeSet>
+
+    <changeSet id="002_insert_test_products" author="test">
+        <insert tableName="categories">
+            <column name="id" value="1"/>
+            <column name="name" value="Electronics"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" value="1"/>
+            <column name="name" value="Smartphone"/>
+            <column name="description" value="A high-end smartphone"/>
+            <column name="price" value="699.99"/>
+            <column name="image_url" value="http://example.com/images/smartphone.jpg"/>
+            <column name="category_id" value="1"/>
+            <column name="created_at" value="2025-03-17T10:00:00"/>
+            <column name="updated_at" value="2025-03-17T10:00:00"/>
+        </insert>
+
+        <insert tableName="products">
+            <column name="id" value="2"/>
+            <column name="name" value="Laptop"/>
+            <column name="description" value="A powerful laptop"/>
+            <column name="price" value="1299.99"/>
+            <column name="image_url" value="http://example.com/images/laptop.jpg"/>
+            <column name="category_id" value="1"/>
+            <column name="created_at" value="2025-03-17T10:00:00"/>
+            <column name="updated_at" value="2025-03-17T10:00:00"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

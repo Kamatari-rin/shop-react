@@ -24,8 +24,8 @@ public class UserServiceDatabaseHealthIndicator extends DatabaseHealthIndicator 
                 "email", new ColumnInfo("email", "varchar", false, 100),
                 "password", new ColumnInfo("password", "varchar", false, 255),
                 "role", new ColumnInfo("role", "varchar", true, 20),
-                "created_at", new ColumnInfo("created_at", "timestamp", true, null),
-                "updated_at", new ColumnInfo("updated_at", "timestamp", true, null)
+                "created_at", new ColumnInfo("created_at", "timestamp", false, null),
+                "updated_at", new ColumnInfo("updated_at", "timestamp", false, null)
         );
     }
 }
