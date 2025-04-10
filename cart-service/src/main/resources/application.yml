@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: cart-service
+  r2dbc:
+    url: r2dbc:postgresql://db:5432/cartdb
+    username: cart_service_user
+    password: cart-service_password
+
+  boot:
+    admin:
+      client:
+        url: http://admin-server:8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,metrics,loggers
+  endpoint:
+    health:
+      show-details: always
+
+health:
+  cart-service:
+    table:
+      carts: carts
+      cart-items: cart_items
+    schema: public
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: This is the ${spring.application.name} module.
+    version: 1.0
+
+logging:
+  level:
+    org.springframework: INFO
+    org.example: INFO
+  aspects:
+    enabled: true
+    level: INFO
+
+product:
+  detail:
+    url: http://product-detail:8080/api/products/

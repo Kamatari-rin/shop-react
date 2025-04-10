@@ -1,11 +1,13 @@
 package org.example.repository;
 
 import org.example.model.Cart;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 import java.util.UUID;
 
-public interface CartRepository extends JpaRepository<Cart, Integer> {
-    Optional<Cart> findByUserId(UUID userId);
+@Repository
+public interface CartRepository extends R2dbcRepository<Cart, Integer> {
+    Mono<Cart> findByUserId(UUID userId);
 }

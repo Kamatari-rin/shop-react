@@ -4,8 +4,8 @@ import org.example.dto.CartDTO;
 import org.example.dto.CartItemRequestDTO;
 import org.example.service.CartService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -20,35 +20,32 @@ public class CartController {
     }
 
     @GetMapping
-    public ResponseEntity<CartDTO> getCart(@RequestHeader("X-User-Id") UUID userId) {
-        CartDTO cart = cartService.getCartByUserId(userId);
-        return ResponseEntity.ok(cart);
+    public Mono<CartDTO> getCart(@RequestHeader("X-User-Id") UUID userId) {
+        return cartService.getCartByUserId(userId);
     }
 
     @PostMapping("/items")
-    public ResponseEntity<CartDTO> addItemToCart(@RequestHeader("X-User-Id") UUID userId,
-                                                 @Valid @RequestBody CartItemRequestDTO request) {
-        CartDTO updatedCart = cartService.addItemToCart(userId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(updatedCart);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Mono<CartDTO> addItemToCart(@RequestHeader("X-User-Id") UUID userId,
+                                       @Valid @RequestBody CartItemRequestDTO request) {
+        return cartService.addItemToCart(userId, request);
     }
 
     @DeleteMapping("/items/{productId}")
-    public ResponseEntity<CartDTO> removeItemFromCart(@RequestHeader("X-User-Id") UUID userId,
-                                                      @PathVariable Integer productId) {
-        CartDTO updatedCart = cartService.removeItemFromCart(userId, productId);
-        return ResponseEntity.ok(updatedCart);
+    public Mono<CartDTO> removeItemFromCart(@RequestHeader("X-User-Id") UUID userId,
+                                            @PathVariable Integer productId) {
+        return cartService.removeItemFromCart(userId, productId);
     }
 
     @PutMapping("/items")
-    public ResponseEntity<CartDTO> updateItemQuantity(@RequestHeader("X-User-Id") UUID userId,
-                                                      @Valid @RequestBody CartItemRequestDTO request) {
-        CartDTO updatedCart = cartService.updateItemQuantity(userId, request);
-        return ResponseEntity.ok(updatedCart);
+    public Mono<CartDTO> updateItemQuantity(@RequestHeader("X-User-Id") UUID userId,
+                                            @Valid @RequestBody CartItemRequestDTO request) {
+        return cartService.updateItemQuantity(userId, request);
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> clearCart(@RequestHeader("X-User-Id") UUID userId) {
-        cartService.clearCart(userId);
-        return ResponseEntity.noContent().build();
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public Mono<Void> clearCart(@RequestHeader("X-User-Id") UUID userId) {
+        return cartService.clearCart(userId);
     }
 }

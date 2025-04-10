@@ -1,22 +1,23 @@
 package org.example.config;
 
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import io.netty.channel.ChannelOption;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
+
+import java.time.Duration;
 
 @Configuration
 public class CartServiceConfig {
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder
-                .requestFactory(() -> {
-                    SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-                    factory.setConnectTimeout(5000);
-                    factory.setReadTimeout(5000);
-                    return factory;
-                })
-                .build();
+    public WebClient.Builder webClientBuilder() {
+        return WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(
+                        HttpClient.newConnection()
+                                .responseTimeout(Duration.ofMillis(5000)) // Аналог readTimeout
+                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000) // Аналог connectTimeout
+                ));
     }
 }

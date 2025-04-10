@@ -1,12 +1,13 @@
 package org.example.model;
 
-import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 
-@Entity
-@Table(name = "cart_items")
+@Table("cart_items")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,19 +15,16 @@ import java.math.BigDecimal;
 @Builder
 public class CartItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
-    private Cart cart;
+    @Column("cart_id")
+    private Integer cartId;
 
-    @Column(name = "product_id", nullable = false)
+    @Column("product_id")
     private Integer productId;
 
-    @Column(nullable = false)
     private Integer quantity;
 
-    @Column(name = "price_at_time")
+    @Column("price_at_time")
     private BigDecimal priceAtTime;
 }

@@ -13,12 +13,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     implementation group: 'de.codecentric', name: 'spring-boot-admin-starter-client', version: '3.4.3'
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway'
-    configurations {
-        implementation {
-            exclude group: 'org.springframework.boot', module: 'spring-boot-starter-data-jpa'
-            exclude group: 'org.springframework.boot', module: 'spring-boot-starter-web'
-        }
-    }
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
 ext {

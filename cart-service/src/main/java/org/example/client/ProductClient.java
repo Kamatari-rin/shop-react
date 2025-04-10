@@ -4,24 +4,25 @@ import org.example.dto.ProductDTO;
 import org.example.exception.ProductClientException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 @Component
 public class ProductClient {
-    private final RestTemplate restTemplate;
+    private final WebClient webClient;
     private final String productDetailUrl;
 
-    public ProductClient(RestTemplate restTemplate,
+    public ProductClient(WebClient.Builder webClientBuilder,
                          @Value("${product.detail.url}") String productDetailUrl) {
-        this.restTemplate = restTemplate;
+        this.webClient = webClientBuilder.baseUrl(productDetailUrl).build();
         this.productDetailUrl = productDetailUrl;
     }
 
-    public ProductDTO getProductById(Integer productId) {
-        try {
-            return restTemplate.getForObject(productDetailUrl + productId, ProductDTO.class);
-        } catch (Exception e) {
-            throw new ProductClientException("Failed to fetch product with ID: " + productId, e);
-        }
+    public Mono<ProductDTO> getProductById(Integer productId) {
+        return webClient.get()
+                .uri("/{id}", productId)
+                .retrieve()
+                .bodyToMono(ProductDTO.class)
+                .onErrorMap(ex -> new ProductClientException("Failed to fetch product with ID: " + productId, ex));
     }
 }

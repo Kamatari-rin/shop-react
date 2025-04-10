@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: product-detail
+  r2dbc:
+    url: r2dbc:postgresql://db:5432/productdb
+    username: product_service_user
+    password: product-service_password
+    pool:
+      max-size: 10
+      min-idle: 5
+      max-idle-time: 30s
+      max-create-connection-time: 30s
+      max-life-time: 600s
+      name: HikariPool-1
+      validation-query-timeout: 3s
+
+  boot:
+    admin:
+      client:
+        url: http://admin-server:8081
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,metrics,loggers
+  endpoint:
+    health:
+      show-details: always
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: This is the ${spring.application.name} module.
+    version: 1.0.0
+
+logging:
+  aspects:
+    enabled: true
+    level: INFO
