@@ -27,11 +27,11 @@ import java.util.UUID;
 public class CartServiceImpl implements CartService {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
-    private final ProductClient productClient; // Предполагается реактивный клиент
+    private final ProductClient productClient;
     private final CartMapper cartMapper;
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Mono<CartDTO> getCartByUserId(UUID userId) {
         return getOrCreateCart(userId)
                 .flatMap(cart -> cartItemRepository.findByCartId(cart.getId())
@@ -74,7 +74,7 @@ public class CartServiceImpl implements CartService {
                                                     .build();
                                             return cartItemRepository.save(newItem);
                                         }))
-                                .then(getCartByUserId(userId))));
+                                .then(Mono.defer(() -> getCartByUserId(userId)))));
     }
 
     @Override
@@ -84,8 +84,9 @@ public class CartServiceImpl implements CartService {
                 .flatMap(cart -> cartItemRepository.findByCartId(cart.getId())
                         .filter(item -> item.getProductId().equals(productId))
                         .next()
+                        .switchIfEmpty(Mono.error(new CartOperationException("Item with productId " + productId + " not found in cart")))
                         .flatMap(cartItemRepository::delete)
-                        .then(getCartByUserId(userId)));
+                        .then(Mono.defer(() -> getCartByUserId(userId))));
     }
 
     @Override
@@ -103,7 +104,7 @@ public class CartServiceImpl implements CartService {
                                     item.setQuantity(req.quantity());
                                     return cartItemRepository.save(item);
                                 })
-                                .then(getCartByUserId(userId))));
+                                .then(Mono.defer(() -> getCartByUserId(userId)))));
     }
 
     @Override
@@ -113,8 +114,7 @@ public class CartServiceImpl implements CartService {
                 .switchIfEmpty(Mono.error(new CartNotFoundException(userId)))
                 .flatMap(cart -> cartItemRepository.findByCartId(cart.getId())
                         .flatMap(cartItemRepository::delete)
-                        .then())
-                .then();
+                        .then(Mono.empty()));
     }
 
     private Mono<Cart> getOrCreateCart(UUID userId) {
@@ -136,6 +136,7 @@ public class CartServiceImpl implements CartService {
 
     private BigDecimal calculateTotalAmount(List<CartDTO.CartItemDTO> items) {
         return items.stream()
+                .filter(item -> item.priceAtTime() != null)
                 .map(item -> item.priceAtTime().multiply(BigDecimal.valueOf(item.quantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }

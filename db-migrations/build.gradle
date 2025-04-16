@@ -4,16 +4,27 @@ plugins {
     id 'java'
     id 'application'
 }
+
 repositories {
     mavenCentral()
 }
+
 application {
     mainClass = 'org.example.DbMigrationsApplication'
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+}
+
 dependencies {
-    implementation group: 'de.codecentric', name: 'spring-boot-admin-starter-client', version: '3.4.3'
     implementation 'org.liquibase:liquibase-core:4.29.2'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.postgresql:postgresql'
 
     configurations {
         implementation {

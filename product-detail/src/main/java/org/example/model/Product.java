@@ -1,37 +1,39 @@
 package org.example.model;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "products")
+@Table("products")
 @Getter
 @Setter
 public class Product {
     @Id
     private Integer id;
 
-    @Column(nullable = false)
+    @Column("name")
     private String name;
 
+    @Column("description")
     private String description;
 
-    @Column(nullable = false)
+    @Column("price")
     private BigDecimal price;
 
-    @Column(name = "image_url")
+    @Column("image_url")
     private String imageUrl;
 
-    @Column(name = "category_id")
+    @Column("category_id")
     private Integer categoryId;
 
-    @Column(name = "created_at", nullable = false)
+    @Column("created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column("updated_at")
     private LocalDateTime updatedAt;
 }

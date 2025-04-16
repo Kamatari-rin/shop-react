@@ -7,6 +7,20 @@ import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
-    @Mapping(target = "categoryName", expression = "java(product.getCategoryId() != null ? categoryRepository.findById(product.getCategoryId()).map(org.example.model.Category::getName).orElse(null) : null)")
-    ProductDetailDTO toDto(Product product, @org.mapstruct.Context org.example.repository.CategoryRepository categoryRepository);
+    @Mapping(target = "categoryName", ignore = true)
+    ProductDetailDTO toDto(Product product);
+
+    default ProductDetailDTO updateCategoryName(ProductDetailDTO dto, String categoryName) {
+        return new ProductDetailDTO(
+                dto.id(),
+                dto.name(),
+                dto.description(),
+                dto.price(),
+                dto.imageUrl(),
+                dto.categoryId(),
+                categoryName,
+                dto.createdAt(),
+                dto.updatedAt()
+        );
+    }
 }

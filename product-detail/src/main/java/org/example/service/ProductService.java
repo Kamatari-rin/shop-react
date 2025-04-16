@@ -1,7 +1,8 @@
 package org.example.service;
 
 import org.example.dto.ProductDetailDTO;
+import reactor.core.publisher.Mono;
 
 public interface ProductService {
-    ProductDetailDTO getProductById(Integer id);
+    Mono<ProductDetailDTO> getProductById(Integer id);
 }

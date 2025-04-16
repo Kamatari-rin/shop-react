@@ -11,9 +11,8 @@ spring:
       max-idle-time: 30s
       max-create-connection-time: 30s
       max-life-time: 600s
-      name: HikariPool-1
+      name: ProductDetailHikariPool
       validation-query-timeout: 3s
-
   boot:
     admin:
       client:
@@ -27,6 +26,9 @@ management:
   endpoint:
     health:
       show-details: always
+  tracing:
+    sampling:
+      probability: 1.0
 
 info:
   app:
@@ -34,7 +36,12 @@ info:
     description: This is the ${spring.application.name} module.
     version: 1.0.0
 
+logbook: {}
+
 logging:
-  aspects:
-    enabled: true
-    level: INFO
+  level:
+    org.zalando.logbook: TRACE
+    org.zalando.logbook.netty: TRACE
+    org.example: INFO
+    org.springframework.boot.actuate: WARN
+    org.springframework.web: WARN

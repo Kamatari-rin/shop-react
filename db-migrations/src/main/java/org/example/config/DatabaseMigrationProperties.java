@@ -4,15 +4,14 @@ import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 @ConfigurationProperties(prefix = "db.migrations")
 @Data
 public class DatabaseMigrationProperties {
-    private MigrationProperties orders;
-    private MigrationProperties product;
-    private MigrationProperties user;
-    private MigrationProperties cart;
-    private MigrationProperties purchase;
+    private Map<String, MigrationProperties> databases = new HashMap<>();
 
     @Data
     public static class MigrationProperties {

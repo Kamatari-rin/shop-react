@@ -16,8 +16,8 @@ public class CartServiceConfig {
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(
                         HttpClient.newConnection()
-                                .responseTimeout(Duration.ofMillis(5000)) // Аналог readTimeout
-                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000) // Аналог connectTimeout
+                                .responseTimeout(Duration.ofMillis(5000))
+                                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                 ));
     }
 }

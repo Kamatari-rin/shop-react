@@ -3,5 +3,5 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.29.xsd">
-    <include file="/db/changelog/carts/001_create_cart_tables.xml"/>
+    <include file="001_create_cart_tables.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

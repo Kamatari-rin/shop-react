@@ -3,10 +3,10 @@ package org.example.service;
 import org.example.dto.ProductDetailDTO;
 import org.example.exception.ProductNotFoundException;
 import org.example.mapper.ProductMapper;
-import org.example.model.Product;
 import org.example.repository.CategoryRepository;
 import org.example.repository.ProductRepository;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 @Service
 public class ProductServiceImpl implements ProductService {
@@ -21,9 +21,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDetailDTO getProductById(Integer id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException(id));
-        return productMapper.toDto(product, categoryRepository);
+    public Mono<ProductDetailDTO> getProductById(Integer id) {
+        return productRepository.findById(id)
+                .switchIfEmpty(Mono.error(new ProductNotFoundException(id)))
+                .flatMap(product -> {
+                    ProductDetailDTO dto = productMapper.toDto(product);
+                    if (product.getCategoryId() == null) {
+                        return Mono.just(dto);
+                    }
+                    return categoryRepository.findById(product.getCategoryId())
+                            .map(category -> productMapper.updateCategoryName(dto, category.getName()))
+                            .defaultIfEmpty(dto);
+                });
     }
 }

@@ -1,17 +1,18 @@
 package org.example.model;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
-@Entity
-@Table(name = "categories")
+@Table("categories")
 @Getter
 @Setter
 public class Category {
     @Id
     private Integer id;
 
-    @Column(nullable = false, unique = true)
+    @Column("name")
     private String name;
 }

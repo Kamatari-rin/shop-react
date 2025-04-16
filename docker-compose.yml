@@ -10,6 +10,10 @@ services:
       - product-detail
     networks:
       - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+    mem_limit: 1g
+    mem_reservation: 512m
 
   admin-server:
     build:
@@ -19,6 +23,10 @@ services:
       - "8081:8081"
     networks:
       - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+    mem_limit: 1g
+    mem_reservation: 512m
 
   user-service:
     build:
@@ -31,6 +39,10 @@ services:
         condition: service_completed_successfully
     networks:
       - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+    mem_limit: 1g
+    mem_reservation: 512m
 
   product-catalog:
     build:
@@ -43,6 +55,10 @@ services:
         condition: service_completed_successfully
     networks:
       - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+    mem_limit: 1g
+    mem_reservation: 512m
 
   product-detail:
     build:
@@ -55,6 +71,10 @@ services:
         condition: service_completed_successfully
     networks:
       - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+    mem_limit: 1g
+    mem_reservation: 512m
 
   cart-service:
     build:
@@ -67,6 +87,10 @@ services:
         condition: service_completed_successfully
     networks:
       - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+    mem_limit: 1g
+    mem_reservation: 512m
 
   orders-list:
     build:
@@ -79,6 +103,10 @@ services:
         condition: service_completed_successfully
     networks:
       - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+    mem_limit: 1g
+    mem_reservation: 512m
 
   order-detail:
     build:
@@ -91,6 +119,10 @@ services:
         condition: service_completed_successfully
     networks:
       - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+    mem_limit: 1g
+    mem_reservation: 512m
 
   purchase-service:
     build:
@@ -103,6 +135,10 @@ services:
         condition: service_completed_successfully
     networks:
       - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+    mem_limit: 1g
+    mem_reservation: 512m
 
   db:
     image: postgres:15
@@ -110,6 +146,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 555666
       POSTGRES_MULTIPLE_DATABASES: userdb,productdb,cartdb,ordersdb,purchasedb
+      POSTGRES_SHARED_BUFFERS: 512MB
+      POSTGRES_WORK_MEM: 8MB
     ports:
       - "5432:5432"
     volumes:
@@ -121,16 +159,20 @@ services:
       retries: 5
     networks:
       - app-network
+    mem_limit: 2g
+    mem_reservation: 1g
 
   db-migrations:
     build:
-      context: db-migrations
+      context: ./db-migrations
       dockerfile: Dockerfile
     depends_on:
       db:
         condition: service_healthy
     networks:
       - app-network
+    mem_limit: 512m
+    mem_reservation: 256m
 
 networks:
   app-network:
