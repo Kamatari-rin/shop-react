@@ -6,8 +6,6 @@ import org.example.service.CartService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -16,15 +14,13 @@ import java.util.UUID;
 @RequestMapping("/api/cart")
 public class CartController {
     private final CartService cartService;
-    public static final Logger log = LoggerFactory.getLogger(CartController.class);
 
     public CartController(CartService cartService) {
         this.cartService = cartService;
     }
 
     @GetMapping
-    public Mono<CartDTO> getCart(@RequestHeader("X-User-Id") UUID userId) {
-        log.info("Received request to /api/cart");
+    public Mono<CartDTO> getCart(@RequestHeader("X-User-Id") UUID userId) {;
         return cartService.getCartByUserId(userId);
     }
 

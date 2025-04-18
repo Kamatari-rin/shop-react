@@ -1,76 +1,37 @@
 package org.example.health;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
+
+import java.util.Map;
 
 @Component("productDetailDatabase")
-@Slf4j
-@RequiredArgsConstructor
-public class ProductDetailDatabaseHealthIndicator implements ReactiveHealthIndicator {
-    private final R2dbcEntityTemplate r2dbcEntityTemplate;
+public class ProductDetailDatabaseHealthIndicator extends DatabaseHealthIndicator {
+
+    public ProductDetailDatabaseHealthIndicator(
+            R2dbcEntityTemplate r2dbcEntityTemplate,
+            @Value("${health.product-detail.schema:public}") String schemaName) {
+        super(r2dbcEntityTemplate, schemaName, "productDetailDatabaseHealth");
+    }
 
     @Override
-    public Mono<Health> health() {
-        long startTime = System.currentTimeMillis();
-        return checkDatabaseConnectivity()
-                .flatMap(health -> checkTableExistence("products"))
-                .flatMap(health -> checkTableExistence("categories"))
-                .flatMap(health -> checkRowCount("products"))
-                .flatMap(health -> checkRowCount("categories"))
-                .map(health -> {
-                    long responseTime = System.currentTimeMillis() - startTime;
-                    log.info("Database health check completed for product-detail, responseTime: {}ms", responseTime);
-                    return health
-                            .withDetail("responseTime", responseTime + "ms")
-                            .build();
-                })
-                .onErrorResume(e -> {
-                    log.error("Error checking database health for product-detail", e);
-                    long responseTime = System.currentTimeMillis() - startTime;
-                    return Mono.just(Health.down(e)
-                            .withDetail("responseTime", responseTime + "ms")
-                            .build());
-                });
-    }
-
-    private Mono<Health.Builder> checkDatabaseConnectivity() {
-        return r2dbcEntityTemplate.getDatabaseClient()
-                .sql("SELECT 1")
-                .fetch()
-                .one()
-                .map(result -> {
-                    log.info("Database connectivity check successful for productdb");
-                    return Health.up().withDetail("database", "productdb reachable");
-                });
-    }
-
-    private Mono<Health.Builder> checkTableExistence(String tableName) {
-        return r2dbcEntityTemplate.getDatabaseClient()
-                .sql("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = :tableName)")
-                .bind("tableName", tableName)
-                .fetch()
-                .one()
-                .map(row -> {
-                    Boolean exists = (Boolean) row.get("exists");
-                    log.info("Table {} exists: {}", tableName, exists);
-                    return exists ? Health.up().withDetail("table." + tableName, "exists") : Health.down().withDetail("table." + tableName, "does not exist");
-                });
-    }
-
-    private Mono<Health.Builder> checkRowCount(String tableName) {
-        return r2dbcEntityTemplate.getDatabaseClient()
-                .sql("SELECT COUNT(*) FROM " + tableName)
-                .fetch()
-                .one()
-                .map(row -> {
-                    Long count = (Long) row.get("count");
-                    log.info("Row count for {}: {}", tableName, count);
-                    return Health.up().withDetail("rowCount." + tableName, count);
-                });
+    protected Map<String, Map<String, ColumnInfo>> getTablesAndColumns() {
+        return Map.of(
+                "products", Map.of(
+                        "id", new ColumnInfo("id", "integer", false, null),
+                        "name", new ColumnInfo("name", "varchar", false, 255),
+                        "description", new ColumnInfo("description", "text", true, null),
+                        "price", new ColumnInfo("price", "numeric", false, null),
+                        "image_url", new ColumnInfo("image_url", "varchar", true, 255),
+                        "category_id", new ColumnInfo("category_id", "integer", true, null),
+                        "created_at", new ColumnInfo("created_at", "timestamp", true, null),
+                        "updated_at", new ColumnInfo("updated_at", "timestamp", true, null)
+                ),
+                "categories", Map.of(
+                        "id", new ColumnInfo("id", "integer", false, null),
+                        "name", new ColumnInfo("name", "varchar", false, 100)
+                )
+        );
     }
 }

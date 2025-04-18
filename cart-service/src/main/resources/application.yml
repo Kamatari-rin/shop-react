@@ -46,12 +46,12 @@ logging:
   level:
     org.zalando.logbook: TRACE
     org.zalando.logbook.netty: TRACE
-    org.example: DEBUG
-    org.example.util: DEBUG
+    org.example: INFO
+    org.example.util: INFO
     org.springframework.boot.actuate: WARN
     org.springframework.web: WARN
     org.springframework.boot.autoconfigure: DEBUG
-    org.springframework.web.filter: DEBUG
+    org.springframework.web.filter: WARN
     io.opentelemetry: DEBUG
 
 product:
