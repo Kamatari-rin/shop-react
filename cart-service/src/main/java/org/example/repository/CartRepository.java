@@ -1,3 +1,4 @@
+// cart-service/src/main/java/org/example/repository/CartRepository.java
 package org.example.repository;
 
 import org.example.model.Cart;
@@ -14,12 +15,12 @@ import java.util.UUID;
 public interface CartRepository extends R2dbcRepository<Cart, Integer> {
     Logger log = LoggerFactory.getLogger(CartRepository.class);
 
+    @Query("SELECT * FROM carts WHERE user_id = :userId")
+    Mono<Cart> findByUserIdInternal(UUID userId);
+
     default Mono<Cart> findByUserId(UUID userId) {
         log.info("[REPOSITORY] Finding cart by userId: {}", userId);
         return findByUserIdInternal(userId)
                 .doOnError(e -> log.error("[REPOSITORY] Error finding cart for userId: {}", userId, e));
     }
-
-    @Query("SELECT * FROM carts WHERE user_id = :userId")
-    Mono<Cart> findByUserIdInternal(UUID userId);
 }

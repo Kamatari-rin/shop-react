@@ -26,9 +26,6 @@ management:
   endpoint:
     health:
       show-details: always
-  tracing:
-    sampling:
-      probability: 1.0
 
 health:
   cart-service:
@@ -49,9 +46,13 @@ logging:
   level:
     org.zalando.logbook: TRACE
     org.zalando.logbook.netty: TRACE
-    org.example: INFO
+    org.example: DEBUG
+    org.example.util: DEBUG
     org.springframework.boot.actuate: WARN
     org.springframework.web: WARN
+    org.springframework.boot.autoconfigure: DEBUG
+    org.springframework.web.filter: DEBUG
+    io.opentelemetry: DEBUG
 
 product:
   detail:

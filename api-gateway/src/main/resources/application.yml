@@ -7,6 +7,7 @@ spring:
     admin:
       client:
         url: http://admin-server:8081
+
   cloud:
     gateway:
       routes:
@@ -49,7 +50,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,env,metrics,loggers,gateway
+        include: health,info,env,metrics,loggers
   endpoint:
     health:
       show-details: always
@@ -69,3 +70,4 @@ logging:
     org.zalando.logbook.netty: TRACE
     org.springframework.boot.actuate: WARN
     org.springframework.web: WARN
+    io.opentelemetry: DEBUG

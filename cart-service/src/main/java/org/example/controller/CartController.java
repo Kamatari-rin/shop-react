@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequestMapping("/api/cart")
 public class CartController {
     private final CartService cartService;
-    private static final Logger log = LoggerFactory.getLogger(CartController.class);
+    public static final Logger log = LoggerFactory.getLogger(CartController.class);
 
     public CartController(CartService cartService) {
         this.cartService = cartService;

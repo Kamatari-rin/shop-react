@@ -52,10 +52,6 @@ subprojects {
 		testImplementation platform('org.junit:junit-bom:5.10.3')
 		testImplementation 'org.junit.jupiter:junit-jupiter'
 		testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-		implementation platform('io.micrometer:micrometer-tracing-bom:1.3.3')
-		implementation 'io.micrometer:micrometer-tracing'
-		implementation 'io.micrometer:micrometer-tracing-bridge-brave'
 	}
 
 	tasks.named('test') {
@@ -84,6 +80,8 @@ webfluxModules.each { proj ->
 	configure(proj) {
 		dependencies {
 			implementation 'org.springframework.boot:spring-boot-starter-webflux'
+			implementation 'io.projectreactor:reactor-tools:3.6.7'
+			implementation 'io.opentelemetry:opentelemetry-api:1.49.0'
 		}
 	}
 }
@@ -137,11 +135,14 @@ logbookModules.each { proj ->
 			implementation 'org.zalando:logbook-spring-webflux:3.9.0'
 			implementation 'org.zalando:logbook-logstash:3.11.0'
 			implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
+			implementation 'io.opentelemetry:opentelemetry-api:1.49.0'
+			implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.14.0-alpha'
 		}
 	}
 }
 
 project(':common') {
+
 }
 
 project(':cart-service') {
@@ -169,8 +170,9 @@ project(':api-gateway') {
 
 project(':admin-server') {
 	dependencies {
-		implementation 'org.zalando:logbook-servlet:3.9.0'
-		implementation 'de.codecentric:spring-boot-admin-starter-server:3.4.3'
+		implementation project(':common')
+		implementation 'org.springframework.boot:spring-boot-starter-webflux'
+		implementation 'de.codecentric:spring-boot-admin-starter-server:3.4.5'
 	}
 }
 

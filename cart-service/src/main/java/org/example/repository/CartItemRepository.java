@@ -10,14 +10,16 @@ import reactor.core.publisher.Flux;
 
 @Repository
 public interface CartItemRepository extends R2dbcRepository<CartItem, Integer> {
-    Logger log = LoggerFactory.getLogger(CartItemRepository.class);
 
-    default Flux<CartItem> findByCartId(Integer cartId) {
-        log.info("[REPOSITORY] Finding items by cartId: {}", cartId);
-        return findByCartIdInternal(cartId)
-                .doOnError(e -> log.error("[REPOSITORY] Error finding items for cartId: {}", cartId, e));
-    }
+    Logger log = LoggerFactory.getLogger(CartItemRepository.class);
 
     @Query("SELECT * FROM cart_items WHERE cart_id = :cartId")
     Flux<CartItem> findByCartIdInternal(Integer cartId);
+
+    default Flux<CartItem> findByCartId(Integer cartId) {
+        log.info("[REPOSITORY] Finding items for cartId: {}", cartId);
+        return findByCartIdInternal(cartId)
+                .doOnNext(item -> log.debug("[REPOSITORY] Found item for cartId: {}", cartId))
+                .doOnError(e -> log.error("[REPOSITORY] Error finding items for cartId: {}", cartId, e));
+    }
 }

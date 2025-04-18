@@ -1,0 +1,2 @@
+org.example.config.TracingAutoConfiguration
+org.example.config.LogbookAutoConfiguration

@@ -12,9 +12,6 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'de.codecentric', name: 'spring-boot-admin-starter-server', version: '3.4.3'
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-
     configurations {
         implementation {
             exclude group: 'org.springframework.boot', module: 'spring-boot-starter-data-jpa'

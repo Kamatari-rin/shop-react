@@ -26,9 +26,12 @@ management:
   endpoint:
     health:
       show-details: always
-  tracing:
-    sampling:
-      probability: 1.0
+#  otlp:
+#    tracing:
+#      endpoint: http://jaeger:4318/v1/traces
+#  tracing:
+#    sampling:
+#      probability: 1.0
 
 info:
   app:
@@ -45,3 +48,4 @@ logging:
     org.example: INFO
     org.springframework.boot.actuate: WARN
     org.springframework.web: WARN
+    io.opentelemetry: DEBUG
