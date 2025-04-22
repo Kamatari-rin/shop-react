@@ -58,4 +58,24 @@
             <column name="price_at_time" value="699.99"/>
         </insert>
     </changeSet>
+
+    <changeSet id="sync-carts-id-seq" author="fix">
+        <sql>
+            SELECT setval('carts_id_seq', (SELECT MAX(id) FROM carts));
+        </sql>
+    </changeSet>
+
+    <changeSet id="sync-cart-items-id-seq" author="fix">
+        <sql>
+            SELECT setval('cart_items_id_seq', (SELECT MAX(id) FROM cart_items));
+        </sql>
+    </changeSet>
+
+    <changeSet id="add-unique-cart-items" author="fix">
+        <sql>
+            ALTER TABLE cart_items
+                ADD CONSTRAINT uk_cart_items_cart_id_product_id
+                    UNIQUE (cart_id, product_id);
+        </sql>
+    </changeSet>
 </databaseChangeLog>

@@ -1,71 +1,58 @@
 package org.example.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-import org.example.dto.ApiError;
-import org.example.exception.AlreadyExistsException;
-import org.example.exception.NotFoundException;
-import org.example.exception.UserServiceException;
+import org.example.exception.ApiError;
+import org.example.exception.BaseExceptionHandler;
+import org.example.exception.UserAlreadyExistsException;
+import org.example.exception.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+@Slf4j
+public class GlobalExceptionHandler extends BaseExceptionHandler {
 
-    @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<ApiError> handleNotFoundException(NotFoundException ex, HttpServletRequest request) {
-        ApiError apiError = ApiError.of(
-                HttpStatus.NOT_FOUND.value(),
-                "Not Found",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
+    @ExceptionHandler(UserNotFoundException.class)
+    public Mono<ResponseEntity<ApiError>> handleUserNotFound(UserNotFoundException ex, ServerWebExchange exchange) {
+        log.debug("User not found: {}", ex.getMessage());
+        return createErrorResponse(ex, exchange, HttpStatus.NOT_FOUND, "User Not Found");
     }
 
-    @ExceptionHandler(AlreadyExistsException.class)
-    public ResponseEntity<ApiError> handleAlreadyExistsException(AlreadyExistsException ex, HttpServletRequest request) {
-        ApiError apiError = ApiError.of(
-                HttpStatus.CONFLICT.value(),
-                "Conflict",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(apiError, HttpStatus.CONFLICT);
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public Mono<ResponseEntity<ApiError>> handleUserAlreadyExists(UserAlreadyExistsException ex, ServerWebExchange exchange) {
+        log.debug("User already exists: {}", ex.getMessage());
+        return createErrorResponse(ex, exchange, HttpStatus.CONFLICT, "User Already Exists");
     }
 
-    @ExceptionHandler(UserServiceException.class)
-    public ResponseEntity<ApiError> handleUserServiceException(UserServiceException ex, HttpServletRequest request) {
-        ApiError apiError = ApiError.of(
-                HttpStatus.BAD_REQUEST.value(),
-                "User Service Error",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(WebExchangeBindException.class)
+    public Mono<ResponseEntity<ApiError>> handleValidationException(WebExchangeBindException ex, ServerWebExchange exchange) {
+        String message = ex.getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        log.debug("Validation error: {}", message);
+        return createErrorResponse(ex, exchange, HttpStatus.BAD_REQUEST, "Validation Error");
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiError> handleConstraintViolationException(ConstraintViolationException ex, HttpServletRequest request) {
-        ApiError apiError = ApiError.of(
-                HttpStatus.BAD_REQUEST.value(),
-                "Validation Error",
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    public Mono<ResponseEntity<ApiError>> handleConstraintViolation(ConstraintViolationException ex, ServerWebExchange exchange) {
+        String message = ex.getConstraintViolations().stream()
+                .map(cv -> cv.getPropertyPath() + ": " + cv.getMessage())
+                .collect(Collectors.joining(", "));
+        log.debug("Constraint violation: {}", message);
+        return createErrorResponse(ex, exchange, HttpStatus.BAD_REQUEST, "Validation Error");
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGenericException(Exception ex, HttpServletRequest request) {
-        ApiError apiError = ApiError.of(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                "Internal Server Error",
-                "An unexpected error occurred: " + ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
+    public Mono<ResponseEntity<ApiError>> handleGenericException(Exception ex, ServerWebExchange exchange) {
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
+        return createErrorResponse(ex, exchange, HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
     }
 }

@@ -1,6 +1,6 @@
 package org.example.exception;
 
-public class CartOperationException extends RuntimeException {
+public class CartOperationException extends ServiceException {
     public CartOperationException(String message) {
         super(message);
     }

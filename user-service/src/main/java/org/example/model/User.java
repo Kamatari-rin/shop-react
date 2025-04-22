@@ -1,40 +1,51 @@
 package org.example.model;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.example.listener.Auditable;
-import org.example.listener.AuditingEntityListener;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
-@Table(name = "users")
-@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-public class User implements Auditable {
+@Table("users")
+public class User implements Persistable<UUID> {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    @Column("id")
     private UUID id;
 
-    @Column(name = "username", nullable = false, unique = true, length = 50)
+    @Column("username")
     private String username;
 
-    @Column(name = "email", nullable = false, unique = true, length = 100)
+    @Column("email")
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column("password")
     private String password;
 
-    @Column(name = "role", length = 20)
+    @Column("role")
     private String role;
 
-    @Column(name = "created_at", nullable = false)
+    @Column("created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column("updated_at")
     private LocalDateTime updatedAt;
+
+    @Transient
+    private boolean isNew;
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void setNew(boolean isNew) {
+        this.isNew = isNew;
+    }
 }

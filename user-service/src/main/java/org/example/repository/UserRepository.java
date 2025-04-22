@@ -1,15 +1,12 @@
 package org.example.repository;
 
 import org.example.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, UUID> {
-    boolean existsById(UUID id);
-    boolean existsByUsername(String username);
-    boolean existsByEmail(String email);
-    Optional<User> findByUsername(String username);
-    Optional<User> findByEmail(String email);
+public interface UserRepository extends ReactiveCrudRepository<User, UUID> {
+    Mono<User> findByUsername(String username);
+    Mono<User> findByEmail(String email);
 }

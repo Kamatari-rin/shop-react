@@ -68,13 +68,13 @@ subprojects {
 	}
 }
 
-def webfluxModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway'), project(':common')]
-def adminClientModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway')]
-def r2dbcModules = [project(':cart-service'), project(':product-detail'), project(':common')]
-def actuatorModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway'), project(':admin-server'), project(':common')]
-def cacheModules = [project(':cart-service'), project(':product-detail'), project(':common')]
-def mapstructModules = [project(':cart-service'), project(':product-detail')]
-def logbookModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway'), project(':admin-server')]
+def webfluxModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway'), project(':common'), project(':user-service')]
+def adminClientModules = [project(':cart-service'), project(':product-detail'), project(':user-service'), project(':api-gateway')]
+def r2dbcModules = [project(':cart-service'), project(':product-detail'), project(':common'), project(':user-service')]
+def actuatorModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway'), project(':admin-server'), project(':user-service'), project(':common')]
+def cacheModules = [project(':cart-service'), project(':product-detail'), project(':common'), project(':user-service')]
+def mapstructModules = [project(':cart-service'), project(':product-detail'), project(':user-service')]
+def logbookModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway'), project(':admin-server'), project(':user-service')]
 
 webfluxModules.each { proj ->
 	configure(proj) {
@@ -181,5 +181,15 @@ project(':db-migrations') {
 		implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 		implementation 'org.liquibase:liquibase-core'
 		implementation 'org.postgresql:postgresql'
+	}
+}
+
+project(':user-service') {
+	dependencies {
+		implementation project(':common')
+		implementation 'org.springframework.boot:spring-boot-starter-validation'
+		runtimeOnly 'org.postgresql:postgresql'
+		testImplementation 'org.testcontainers:postgresql'
+		testImplementation 'org.testcontainers:junit-jupiter'
 	}
 }

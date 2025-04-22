@@ -1,5 +1,5 @@
 rootProject.name = 'yandex-shop-react'
-//include 'user-service'
+include 'user-service'
 //include 'product-catalog'
 include 'product-detail'
 include 'cart-service'

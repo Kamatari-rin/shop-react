@@ -1,87 +1,101 @@
 package org.example.service;
 
+import lombok.RequiredArgsConstructor;
 import org.example.dto.UserCreateDTO;
 import org.example.dto.UserDTO;
 import org.example.dto.UserUpdateDTO;
-import org.example.exception.AlreadyExistsException;
 import org.example.exception.UserAlreadyExistsException;
 import org.example.exception.UserNotFoundException;
 import org.example.mapper.UserMapper;
-import org.example.model.User;
 import org.example.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-    }
-
     @Override
-    public UserDTO createUser(UserCreateDTO userCreateDTO) {
-        validateUniqueUsername(userCreateDTO.getUsername(), null);
-        validateUniqueEmail(userCreateDTO.getEmail(), null);
-
-        return Optional.of(userCreateDTO)
+    public Mono<UserDTO> createUser(UserCreateDTO userCreateDTO) {
+        return Mono.zip(
+                        validateUniqueUsername(userCreateDTO.getUsername(), null),
+                        validateUniqueEmail(userCreateDTO.getEmail(), null)
+                )
+                .then(Mono.just(userCreateDTO))
                 .map(userMapper::toEntity)
-                .map(userRepository::save)
-                .map(userMapper::toDto)
-                .get();
+                .map(user -> {
+                    user.setNew(true);
+                    return user;
+                })
+                .flatMap(userRepository::save)
+                .flatMap(user -> userRepository.findById(user.getId()))
+                .map(userMapper::toDto);
     }
 
     @Override
-    public UserDTO getUserById(UUID userId) {
+    public Mono<UserDTO> getUserById(UUID userId) {
         return userRepository.findById(userId)
-                .map(userMapper::toDto)
-                .orElseThrow(() -> new UserNotFoundException(userId));
+                .switchIfEmpty(Mono.error(new UserNotFoundException(userId)))
+                .map(userMapper::toDto);
     }
 
     @Override
-    public UserDTO updateUser(UUID userId, UserUpdateDTO userUpdateDTO) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
-
-        Optional.ofNullable(userUpdateDTO.getUsername())
-                .filter(newUsername -> !newUsername.equals(user.getUsername()))
-                .ifPresent(newUsername -> validateUniqueUsername(newUsername, userId));
-
-        Optional.ofNullable(userUpdateDTO.getEmail())
-                .filter(newEmail -> !newEmail.equals(user.getEmail()))
-                .ifPresent(newEmail -> validateUniqueEmail(newEmail, userId));
-
-        userMapper.updateEntityFromDto(userUpdateDTO, user);
-        return userMapper.toDto(userRepository.save(user));
+    public Mono<UserDTO> updateUser(UUID userId, UserUpdateDTO userUpdateDTO) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.error(new UserNotFoundException(userId)))
+                .flatMap(user -> {
+                    String newUsername = userUpdateDTO.getUsername();
+                    String newEmail = userUpdateDTO.getEmail();
+                    Mono<Void> usernameValidation = newUsername != null && !newUsername.equals(user.getUsername())
+                            ? validateUniqueUsername(newUsername, userId)
+                            : Mono.empty();
+                    Mono<Void> emailValidation = newEmail != null && !newEmail.equals(user.getEmail())
+                            ? validateUniqueEmail(newEmail, userId)
+                            : Mono.empty();
+                    return usernameValidation
+                            .then(emailValidation)
+                            .then(Mono.just(user));
+                })
+                .map(user -> {
+                    userMapper.updateEntityFromDto(userUpdateDTO, user);
+                    user.setNew(false);
+                    return user;
+                })
+                .flatMap(userRepository::save)
+                .map(userMapper::toDto);
     }
 
     @Override
-    public void deleteUser(UUID userId) {
-        userRepository.findById(userId)
-                .ifPresentOrElse(
-                        user -> userRepository.deleteById(userId),
-                        () -> { throw new UserNotFoundException(userId); }
-                );
+    public Mono<Void> deleteUser(UUID userId) {
+        return userRepository.findById(userId)
+                .switchIfEmpty(Mono.error(new UserNotFoundException(userId)))
+                .flatMap(user -> userRepository.deleteById(userId));
     }
 
-    private void validateUniqueUsername(String username, UUID excludeUserId) {
-        userRepository.findByUsername(username)
-                .filter(existingUser -> !existingUser.getId().equals(excludeUserId))
-                .ifPresent(existingUser -> {
-                    throw new AlreadyExistsException("User with username {0} already exists", username);
-                });
+    private Mono<Void> validateUniqueUsername(String username, UUID excludeUserId) {
+        return userRepository.findByUsername(username)
+                .flatMap(existingUser -> {
+                    if (excludeUserId != null && excludeUserId.equals(existingUser.getId())) {
+                        return Mono.empty();
+                    }
+                    return Mono.error(new UserAlreadyExistsException("username", username));
+                })
+                .then();
     }
 
-    private void validateUniqueEmail(String email, UUID excludeUserId) {
-        userRepository.findByEmail(email)
-                .filter(existingUser -> !existingUser.getId().equals(excludeUserId))
-                .ifPresent(existingUser -> {
-                    throw new UserAlreadyExistsException(email);
-                });
+    private Mono<Void> validateUniqueEmail(String email, UUID excludeUserId) {
+        return userRepository.findByEmail(email)
+                .flatMap(existingUser -> {
+                    if (excludeUserId != null && excludeUserId.equals(existingUser.getId())) {
+                        return Mono.empty();
+                    }
+                    return Mono.error(new UserAlreadyExistsException("email", email));
+                })
+                .then();
     }
 }

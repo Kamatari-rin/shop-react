@@ -3,7 +3,7 @@ package org.example.exception;
 import java.text.MessageFormat;
 import java.util.function.Supplier;
 
-public class NotFoundException extends UserServiceException {
+public class NotFoundException extends ServiceException {
     public NotFoundException(String message, Object... args) {
         super(MessageFormat.format(message, args));
     }

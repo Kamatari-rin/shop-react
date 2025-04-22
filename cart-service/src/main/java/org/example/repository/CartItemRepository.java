@@ -7,6 +7,7 @@ import org.springframework.data.r2dbc.repository.Query;
 import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Repository
 public interface CartItemRepository extends R2dbcRepository<CartItem, Integer> {
@@ -15,6 +16,8 @@ public interface CartItemRepository extends R2dbcRepository<CartItem, Integer> {
 
     @Query("SELECT * FROM cart_items WHERE cart_id = :cartId")
     Flux<CartItem> findByCartIdInternal(Integer cartId);
+
+    Mono<CartItem> findByCartIdAndProductId(Integer cartId, Integer productId);
 
     default Flux<CartItem> findByCartId(Integer cartId) {
         log.info("[REPOSITORY] Finding items for cartId: {}", cartId);
