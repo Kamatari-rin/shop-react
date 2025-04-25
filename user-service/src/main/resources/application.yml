@@ -50,6 +50,6 @@ logging:
     org.example.util: INFO
     org.springframework.boot.actuate: WARN
     org.springframework.web: WARN
-    org.springframework.boot.autoconfigure: DEBUG
+    org.springframework.boot.autoconfigure: INFO
     org.springframework.web.filter: WARN
     io.opentelemetry: DEBUG

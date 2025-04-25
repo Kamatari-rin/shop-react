@@ -1,27 +1,28 @@
 package org.example.controller;
 
-import org.example.dto.ProductDTO;
+import lombok.RequiredArgsConstructor;
+import org.example.model.ProductPage;
 import org.example.service.ProductService;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/products")
+@RequiredArgsConstructor
 public class ProductController {
     private final ProductService productService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
-
     @GetMapping
-    public ResponseEntity<Page<ProductDTO>> getProducts(
+    public Mono<ResponseEntity<ProductPage>> getProducts(
             @RequestParam(required = false) Integer categoryId,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
@@ -33,7 +34,7 @@ public class ProductController {
     ) {
         Sort.Direction sortDirection = Sort.Direction.fromString(direction);
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-        Page<ProductDTO> products = productService.getProducts(categoryId, minPrice, maxPrice, search, pageable);
-        return ResponseEntity.ok(products);
+        return productService.getProducts(categoryId, minPrice, maxPrice, search, pageable)
+                .map(ResponseEntity::ok);
     }
 }

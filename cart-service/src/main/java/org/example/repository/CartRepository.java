@@ -1,4 +1,3 @@
-// cart-service/src/main/java/org/example/repository/CartRepository.java
 package org.example.repository;
 
 import org.example.model.Cart;

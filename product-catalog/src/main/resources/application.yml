@@ -1,17 +1,19 @@
 spring:
   application:
-    name: cart-service
+    name: product-catalog
   r2dbc:
-    url: r2dbc:postgresql://db:5432/cartdb
-    username: cart_service_user
-    password: cart-service_password
+    url: r2dbc:postgresql://db:5432/productdb
+    username: product_service_user
+    password: product-service_password
     pool:
       max-size: 10
       min-idle: 5
+      initial-size: 5
       max-idle-time: 30s
       max-create-connection-time: 30s
       max-life-time: 600s
-      name: CartServiceHikariPool
+      name: ProductCatalogHikariPool
+      validation-query: SELECT 1
       validation-query-timeout: 3s
   boot:
     admin:
@@ -28,10 +30,8 @@ management:
       show-details: always
 
 health:
-  cart-service:
-    table:
-      carts: carts
-      cart-items: cart_items
+  product-service:
+    table: products
     schema: public
 
 info:
@@ -53,7 +53,3 @@ logging:
     org.springframework.boot.autoconfigure: INFO
     org.springframework.web.filter: WARN
     io.opentelemetry: DEBUG
-
-product:
-  detail:
-    url: http://product-detail:8080/api/products/

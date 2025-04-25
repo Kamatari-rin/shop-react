@@ -1,31 +1,31 @@
 package org.example.repository;
 
 import org.example.model.Product;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 
-import org.example.model.Product;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+public interface ProductRepository extends ReactiveCrudRepository<Product, Integer> {
+    @Query("""
+            SELECT p.* FROM products p
+            WHERE (:categoryId IS NULL OR p.category_id = :categoryId)
+            AND (:minPrice IS NULL OR p.price >= :minPrice)
+            AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+            AND (:search IS NULL OR LOWER(p.name) LIKE :searchPattern)
+            ORDER BY :orderBy
+            LIMIT :limit OFFSET :offset
+            """)
+    Flux<Product> findProducts(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, String search, String searchPattern, String orderBy, long offset, int limit);
 
-public interface ProductRepository extends JpaRepository<Product, Integer> {
-    @Query("SELECT p FROM Product p WHERE " +
-            "(:categoryId IS NULL OR p.categoryId = :categoryId) AND " +
-            "(:minPrice IS NULL OR p.price >= :minPrice) AND " +
-            "(:maxPrice IS NULL OR p.price <= :maxPrice) AND " +
-            "(:search IS NULL OR LOWER(p.name) LIKE :searchPattern)")
-    Page<Product> findProducts(
-            @Param("categoryId") Integer categoryId,
-            @Param("minPrice") BigDecimal minPrice,
-            @Param("maxPrice") BigDecimal maxPrice,
-            @Param("search") String search,
-            @Param("searchPattern") String searchPattern,
-            Pageable pageable
-    );
+    @Query("""
+            SELECT COUNT(*) FROM products p
+            WHERE (:categoryId IS NULL OR p.category_id = :categoryId)
+            AND (:minPrice IS NULL OR p.price >= :minPrice)
+            AND (:maxPrice IS NULL OR p.price <= :maxPrice)
+            AND (:search IS NULL OR LOWER(p.name) LIKE :searchPattern)
+            """)
+    Mono<Long> countProducts(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, String search, String searchPattern);
 }

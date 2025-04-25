@@ -78,6 +78,13 @@ services:
       - app-network
     environment:
       - JAVA_OPTS=-Xmx768m -Xms512m
+      - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_SERVICE_NAME=product-catalog
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED=true
+      - OTEL_LOGS_EXPORTER=none
+    volumes:
+      - ./otel/opentelemetry-javaagent.jar:/otel/opentelemetry-javaagent.jar
     mem_limit: 1g
     mem_reservation: 512m
 
@@ -179,7 +186,7 @@ services:
     image: postgres:15
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 555666
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_MULTIPLE_DATABASES: userdb,productdb,cartdb,ordersdb,purchasedb
       POSTGRES_SHARED_BUFFERS: 512MB
       POSTGRES_WORK_MEM: 8MB

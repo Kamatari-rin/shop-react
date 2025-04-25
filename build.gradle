@@ -68,13 +68,64 @@ subprojects {
 	}
 }
 
-def webfluxModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway'), project(':common'), project(':user-service')]
-def adminClientModules = [project(':cart-service'), project(':product-detail'), project(':user-service'), project(':api-gateway')]
-def r2dbcModules = [project(':cart-service'), project(':product-detail'), project(':common'), project(':user-service')]
-def actuatorModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway'), project(':admin-server'), project(':user-service'), project(':common')]
-def cacheModules = [project(':cart-service'), project(':product-detail'), project(':common'), project(':user-service')]
-def mapstructModules = [project(':cart-service'), project(':product-detail'), project(':user-service')]
-def logbookModules = [project(':cart-service'), project(':product-detail'), project(':api-gateway'), project(':admin-server'), project(':user-service')]
+def webfluxModules = [project(':cart-service'),
+					  				  project(':product-detail'),
+					  				  project(':product-catalog'),
+					  				  project(':api-gateway'),
+					  				  project(':common'),
+					  				  project(':user-service'),
+									  project(':order-detail')
+									 ]
+
+def adminClientModules = [project(':cart-service'),
+						  				  project(':product-detail'),
+						  				  project(':product-catalog'),
+						  				  project(':user-service'),
+						  				  project(':api-gateway'),
+						  				  project(':order-detail')
+										 ]
+
+def r2dbcModules = [project(':cart-service'),
+								    project(':product-detail'),
+									project(':product-catalog'),
+									project(':common'),
+									project(':user-service'),
+									project(':order-detail')
+								   ]
+
+def actuatorModules = [project(':cart-service'),
+					   				   project(':product-detail'),
+					   				   project(':product-catalog'),
+					   				   project(':api-gateway'),
+					   				   project(':admin-server'),
+					   				   project(':user-service'),
+					   				   project(':common'),
+					   				   project(':order-detail')
+									  ]
+
+def cacheModules = [project(':cart-service'),
+								    project(':product-detail'),
+									project(':product-catalog'),
+									project(':common'),
+									project(':user-service'),
+									project(':order-detail')
+								   ]
+
+def mapstructModules = [project(':cart-service'),
+										project(':product-detail'),
+										project(':product-catalog'),
+										project(':user-service'),
+										project(':order-detail')
+									   ]
+
+def logbookModules = [project(':cart-service'),
+					  				  project(':product-detail'),
+					  				  project(':product-catalog'),
+					  				  project(':api-gateway'),
+					  				  project(':admin-server'),
+					  				  project(':user-service'),
+					  				  project(':order-detail')
+									 ]
 
 webfluxModules.each { proj ->
 	configure(proj) {
@@ -154,6 +205,22 @@ project(':cart-service') {
 }
 
 project(':product-detail') {
+	dependencies {
+		implementation project(':common')
+		implementation 'org.springframework.boot:spring-boot-starter-validation'
+		runtimeOnly 'org.postgresql:postgresql'
+	}
+}
+
+project(':product-catalog') {
+	dependencies {
+		implementation project(':common')
+		implementation 'org.springframework.boot:spring-boot-starter-validation'
+		runtimeOnly 'org.postgresql:postgresql'
+	}
+}
+
+project(':order-detail') {
 	dependencies {
 		implementation project(':common')
 		implementation 'org.springframework.boot:spring-boot-starter-validation'

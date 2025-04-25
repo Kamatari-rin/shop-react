@@ -1,11 +1,11 @@
 package org.example.service;
 
-import org.example.dto.ProductDTO;
-import org.springframework.data.domain.Page;
+import org.example.model.ProductPage;
 import org.springframework.data.domain.Pageable;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 
 public interface ProductService {
-    Page<ProductDTO> getProducts(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, String search, Pageable pageable);
+    Mono<ProductPage> getProducts(Integer categoryId, BigDecimal minPrice, BigDecimal maxPrice, String search, Pageable pageable);
 }
