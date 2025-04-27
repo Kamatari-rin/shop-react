@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: purchase-service
+  r2dbc:
+    url: r2dbc:postgresql://db:5432/purchasedb
+    username: purchase_service_user
+    password: purchase-service_password
+    pool:
+      max-size: 10
+      min-idle: 5
+      initial-size: 5
+      max-idle-time: 30s
+      max-create-connection-time: 30s
+      max-life-time: 600s
+      name: PurchaseServiceHikariPool
+      validation-query: SELECT 1
+      validation-query-timeout: 3s
+  boot:
+    admin:
+      client:
+        url: http://admin-server:8081
+  cache:
+    cache-names: purchases,products
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=600s
+
+cart:
+  service:
+    url: http://cart-service:8080/api/cart
+product:
+  detail:
+    url: http://product-detail:8080/api/products
+order:
+  service:
+    url: http://order-service:8080/api/orders
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,metrics,loggers
+  endpoint:
+    health:
+      show-details: always
+
+health:
+  purchase-service:
+    table: purchases
+    schema: public
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: This is the ${spring.application.name} module.
+    version: 1.0.0
+
+logbook: {}
+
+logging:
+  level:
+    org.zalando.logbook: TRACE
+    org.zalando.logbook.netty: TRACE
+    org.example: INFO
+    org.example.util: INFO
+    org.springframework.boot.actuate: WARN
+    org.springframework.web: WARN
+    org.springframework.boot.autoconfigure: INFO
+    org.springframework.web.filter: WARN
+    io.opentelemetry: DEBUG

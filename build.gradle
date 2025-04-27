@@ -74,7 +74,8 @@ def webfluxModules = [project(':cart-service'),
 					  				  project(':api-gateway'),
 					  				  project(':common'),
 					  				  project(':user-service'),
-									  project(':order-detail')
+									  project(':order-service'),
+					  				  project(':purchase-service')
 									 ]
 
 def adminClientModules = [project(':cart-service'),
@@ -82,7 +83,8 @@ def adminClientModules = [project(':cart-service'),
 						  				  project(':product-catalog'),
 						  				  project(':user-service'),
 						  				  project(':api-gateway'),
-						  				  project(':order-detail')
+						  				  project(':order-service'),
+						  				  project(':purchase-service')
 										 ]
 
 def r2dbcModules = [project(':cart-service'),
@@ -90,7 +92,8 @@ def r2dbcModules = [project(':cart-service'),
 									project(':product-catalog'),
 									project(':common'),
 									project(':user-service'),
-									project(':order-detail')
+									project(':order-service'),
+									project(':purchase-service')
 								   ]
 
 def actuatorModules = [project(':cart-service'),
@@ -100,7 +103,8 @@ def actuatorModules = [project(':cart-service'),
 					   				   project(':admin-server'),
 					   				   project(':user-service'),
 					   				   project(':common'),
-					   				   project(':order-detail')
+					   				   project(':order-service'),
+					   				   project(':purchase-service')
 									  ]
 
 def cacheModules = [project(':cart-service'),
@@ -108,14 +112,16 @@ def cacheModules = [project(':cart-service'),
 									project(':product-catalog'),
 									project(':common'),
 									project(':user-service'),
-									project(':order-detail')
+									project(':order-service'),
+									project(':purchase-service')
 								   ]
 
 def mapstructModules = [project(':cart-service'),
 										project(':product-detail'),
 										project(':product-catalog'),
 										project(':user-service'),
-										project(':order-detail')
+										project(':order-service'),
+										project(':purchase-service')
 									   ]
 
 def logbookModules = [project(':cart-service'),
@@ -124,7 +130,8 @@ def logbookModules = [project(':cart-service'),
 					  				  project(':api-gateway'),
 					  				  project(':admin-server'),
 					  				  project(':user-service'),
-					  				  project(':order-detail')
+					  				  project(':order-service'),
+					  				  project(':purchase-service')
 									 ]
 
 webfluxModules.each { proj ->
@@ -220,7 +227,15 @@ project(':product-catalog') {
 	}
 }
 
-project(':order-detail') {
+project(':order-service') {
+	dependencies {
+		implementation project(':common')
+		implementation 'org.springframework.boot:spring-boot-starter-validation'
+		runtimeOnly 'org.postgresql:postgresql'
+	}
+}
+
+project(':purchase-service') {
 	dependencies {
 		implementation project(':common')
 		implementation 'org.springframework.boot:spring-boot-starter-validation'

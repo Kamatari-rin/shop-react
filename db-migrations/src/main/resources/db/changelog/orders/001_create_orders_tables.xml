@@ -51,7 +51,15 @@
             <column name="product_id"/>
         </createIndex>
     </changeSet>
-
+    <changeSet id="003_add_fk_order_items_order_id" author="admin">
+        <addForeignKeyConstraint
+                baseTableName="order_items"
+                baseColumnNames="order_id"
+                constraintName="fk_order_items_order_id"
+                referencedTableName="orders"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+    </changeSet>
     <changeSet id="002_insert_test_orders" author="admin">
         <insert tableName="orders">
             <column name="user_id" value="550e8400-e29b-41d4-a716-446655440000"/>
