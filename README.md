@@ -192,6 +192,6 @@ docker compose up -d --build
 
 Проверка статусов контейнеров:
 ```bash
-docker-compose ps
+docker compose ps
 ```
 - Все сервисы должны быть в состоянии Up.
