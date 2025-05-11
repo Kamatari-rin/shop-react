@@ -164,7 +164,7 @@ cd yandex-shop
 ### 3. Сборка и запуск
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 - --build пересобирает образы для всех сервисов, если были изменения в коде или Dockerfile.
@@ -172,7 +172,7 @@ docker-compose up --build
 
 ### Запуск в фоновом режиме
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### 5. Проверка доступности
