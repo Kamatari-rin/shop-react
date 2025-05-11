@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.36/5a30490a6e14977d97d9c73c924c1f1b5311ea95/lombok-1.18.36.jar" />
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.mapstruct/mapstruct-processor/1.5.5.Final/897f6f115930b936287bef552bf5fe28cc64717d/mapstruct-processor-1.5.5.Final.jar" />
+        </processorPath>
+        <module name="yandex-shop-react.cart-service.main" />
+        <module name="yandex-shop-react.product-detail.main" />
+        <module name="yandex-shop-react.purchase-service.main" />
+        <module name="yandex-shop-react.user-service.main" />
+        <module name="yandex-shop-react.product-catalog.main" />
+        <module name="yandex-shop-react.order-service.main" />
+      </profile>
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.36/5a30490a6e14977d97d9c73c924c1f1b5311ea95/lombok-1.18.36.jar" />
+        </processorPath>
+        <module name="yandex-shop-react.db-migrations.main" />
+        <module name="yandex-shop-react.admin-server.main" />
+        <module name="yandex-shop-react.common.main" />
+        <module name="yandex-shop-react.api-gateway.main" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="21" />
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="yandex-shop-react.admin-server" options="-parameters" />
+      <module name="yandex-shop-react.admin-server.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.admin-server.test" options="-parameters" />
+      <module name="yandex-shop-react.api-gateway" options="-parameters" />
+      <module name="yandex-shop-react.api-gateway.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.api-gateway.test" options="-parameters" />
+      <module name="yandex-shop-react.cart-service" options="-parameters" />
+      <module name="yandex-shop-react.cart-service.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.cart-service.test" options="-parameters" />
+      <module name="yandex-shop-react.common" options="-parameters" />
+      <module name="yandex-shop-react.common.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.common.test" options="-parameters" />
+      <module name="yandex-shop-react.db-migrations" options="-parameters" />
+      <module name="yandex-shop-react.db-migrations.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.db-migrations.test" options="-parameters" />
+      <module name="yandex-shop-react.order-service" options="-parameters" />
+      <module name="yandex-shop-react.order-service.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.order-service.test" options="-parameters" />
+      <module name="yandex-shop-react.product-catalog" options="-parameters" />
+      <module name="yandex-shop-react.product-catalog.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.product-catalog.test" options="-parameters" />
+      <module name="yandex-shop-react.product-detail" options="-parameters" />
+      <module name="yandex-shop-react.product-detail.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.product-detail.test" options="-parameters" />
+      <module name="yandex-shop-react.purchase-service" options="-parameters" />
+      <module name="yandex-shop-react.purchase-service.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.purchase-service.test" options="-parameters" />
+      <module name="yandex-shop-react.user-service" options="-parameters" />
+      <module name="yandex-shop-react.user-service.main" options="-parameters -parameters" />
+      <module name="yandex-shop-react.user-service.test" options="-parameters" />
+    </option>
+  </component>
+</project>

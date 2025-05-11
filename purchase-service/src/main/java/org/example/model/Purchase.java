@@ -1,34 +1,35 @@
 package org.example.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import org.example.enums.PaymentStatus;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
-@Table(name = "purchases")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class Purchase {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+@Table("purchases")
+public record Purchase(
+        @Id
+        Integer id,
 
-    @Column(name = "order_id")
-    private Integer orderId;
+        @NotNull
+        @Column("order_id")
+        Integer orderId,
 
-    @Column(name = "user_id")
-    private UUID userId;
+        @NotNull
+        UUID userId,
 
-    @Column(name = "payment_status", nullable = false)
-    private String paymentStatus;
+        @NotNull
+        @Size(max = 50)
+        PaymentStatus paymentStatus,
 
-    @Column(name = "transaction_date", nullable = false)
-    private LocalDateTime transactionDate;
+        @NotNull
+        LocalDateTime transactionDate,
 
-    private String details;
+        @Size(max = 1000)
+        String details
+) {
 }

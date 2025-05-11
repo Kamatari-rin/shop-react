@@ -1,90 +1,104 @@
 package org.example.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.client.CartClient;
 import org.example.client.OrderClient;
 import org.example.client.ProductClient;
 import org.example.dto.*;
-import org.example.exception.PurchaseException;
+import org.example.enums.PaymentStatus;
+import org.example.exception.CartEmptyException;
+import org.example.exception.PriceMismatchException;
 import org.example.model.Purchase;
 import org.example.repository.PurchaseRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.reactive.TransactionalOperator;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PurchaseServiceImpl implements PurchaseService {
     private final CartClient cartClient;
     private final ProductClient productClient;
     private final OrderClient orderClient;
     private final PurchaseRepository purchaseRepository;
+    private final TransactionalOperator transactionalOperator;
 
     @Override
-    @Transactional
-    public PurchaseResponseDTO createPurchase(UUID userId) {
-        CartDTO cart = getValidatedCart(userId);
-        validatePrices(cart);
-
-        OrderDTO order = createOrder(cart);
-
-        Purchase purchase = Purchase.builder()
-                .orderId(order.id())
-                .userId(userId)
-                .paymentStatus("PENDING")
-                .transactionDate(LocalDateTime.now())
-                .details("Payment via card")
-                .build();
-        purchaseRepository.save(purchase);
-
-        clearCart(userId);
-
-        return new PurchaseResponseDTO(
-                purchase.getOrderId(),
-                purchase.getUserId(),
-                cart.totalAmount(),
-                purchase.getPaymentStatus(),
-                purchase.getTransactionDate()
-        );
+    public Mono<PurchaseResponseDTO> createPurchase(UUID userId) {
+        return getValidatedCart(userId)
+                .flatMap(cart -> validatePrices(cart).thenReturn(cart))
+                .flatMap(this::createOrder)
+                .flatMap(order -> savePurchase(userId, order)
+                        .map(purchase -> new PurchaseData(purchase, order.totalAmount())))
+                .flatMap(data -> clearCart(userId).thenReturn(data))
+                .map(this::toResponseDTO)
+                .as(transactionalOperator::transactional);
     }
 
-    private CartDTO getValidatedCart(UUID userId) {
-        CartDTO cart = cartClient.getCart(userId);
-        if (cart == null || cart.items().isEmpty()) {
-            throw new PurchaseException("Cart is empty for user: " + userId);
-        }
-        return cart;
+    private Mono<CartDTO> getValidatedCart(UUID userId) {
+        log.debug("Fetching cart for user: {}", userId);
+        return cartClient.getCart(userId)
+                .filter(cart -> !cart.items().isEmpty())
+                .switchIfEmpty(Mono.error(new CartEmptyException(userId.toString())));
     }
 
-    private void validatePrices(CartDTO cart) {
-        cart.items().forEach(item -> {
-            ProductDetailDTO product = productClient.getProductById(item.productId());
-            if (!product.price().equals(item.priceAtTime())) {
-                throw new PurchaseException("Price mismatch for product ID: " + item.productId());
-            }
-        });
+    private Mono<Void> validatePrices(CartDTO cart) {
+        log.debug("Validating prices for cart: {}", cart.id());
+        return Flux.fromIterable(cart.items())
+                .flatMap(item -> productClient.getProductById(item.productId())
+                        .filter(product -> product.price().equals(item.priceAtTime()))
+                        .switchIfEmpty(Mono.error(new PriceMismatchException(item.productId()))))
+                .then();
     }
 
-    private OrderDTO createOrder(CartDTO cart) {
+    private Mono<OrderDetailDTO> createOrder(CartDTO cart) {
+        log.debug("Creating order for cart: {}", cart.id());
         CreateOrderRequestDTO request = new CreateOrderRequestDTO(
                 cart.userId(),
-                LocalDateTime.now(),
-                "PENDING",
-                cart.totalAmount(),
                 cart.items().stream()
-                        .map(item -> new CreateOrderRequestDTO.OrderItemDTO(
+                        .map(item -> new CreateOrderRequestDTO.OrderItemRequestDTO(
                                 item.productId(),
-                                item.quantity(),
-                                item.priceAtTime(),
-                                item.imageUrl()))
+                                item.quantity()))
                         .toList()
         );
         return orderClient.createOrder(request);
     }
 
-    private void clearCart(UUID userId) {
-        cartClient.clearCart(userId);
+    private Mono<Purchase> savePurchase(UUID userId, OrderDetailDTO order) {
+        log.debug("Saving purchase for order: {}", order.id());
+        Purchase purchase = new Purchase(
+                null,
+                order.id(),
+                userId,
+                PaymentStatus.PENDING,
+                LocalDateTime.now(),
+                "Payment via card"
+        );
+        return purchaseRepository.save(purchase);
+    }
+
+    private Mono<Void> clearCart(UUID userId) {
+        log.debug("Clearing cart for user: {}", userId);
+        return cartClient.clearCart(userId);
+    }
+
+    private PurchaseResponseDTO toResponseDTO(PurchaseData data) {
+        return new PurchaseResponseDTO(
+                data.purchase().orderId(),
+                data.purchase().userId(),
+                data.totalAmount(),
+                data.purchase().paymentStatus(),
+                data.purchase().transactionDate()
+        );
+    }
+
+    private record PurchaseData(Purchase purchase, BigDecimal totalAmount) {
     }
 }

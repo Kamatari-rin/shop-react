@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/admin-server/yandex-shop-react.admin-server.main.iml" filepath="$PROJECT_DIR$/.idea/modules/admin-server/yandex-shop-react.admin-server.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/api-gateway/yandex-shop-react.api-gateway.main.iml" filepath="$PROJECT_DIR$/.idea/modules/api-gateway/yandex-shop-react.api-gateway.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/cart-service/yandex-shop-react.cart-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/cart-service/yandex-shop-react.cart-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/common/yandex-shop-react.common.main.iml" filepath="$PROJECT_DIR$/.idea/modules/common/yandex-shop-react.common.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/db-migrations/yandex-shop-react.db-migrations.main.iml" filepath="$PROJECT_DIR$/.idea/modules/db-migrations/yandex-shop-react.db-migrations.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/order-service/yandex-shop-react.order-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/order-service/yandex-shop-react.order-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/product-catalog/yandex-shop-react.product-catalog.main.iml" filepath="$PROJECT_DIR$/.idea/modules/product-catalog/yandex-shop-react.product-catalog.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/product-detail/yandex-shop-react.product-detail.main.iml" filepath="$PROJECT_DIR$/.idea/modules/product-detail/yandex-shop-react.product-detail.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/purchase-service/yandex-shop-react.purchase-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/purchase-service/yandex-shop-react.purchase-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/user-service/yandex-shop-react.user-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/user-service/yandex-shop-react.user-service.main.iml" />
+    </modules>
+  </component>
+</project>

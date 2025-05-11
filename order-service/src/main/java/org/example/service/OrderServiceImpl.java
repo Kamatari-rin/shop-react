@@ -40,12 +40,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Cacheable(value = "orders", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #status + '-' + #startDate + '-' + #endDate")
     public Mono<OrderListDTO> getOrders(UUID userId, Pageable pageable, String status, LocalDateTime startDate, LocalDateTime endDate) {
+        String effectiveStatus = (status == null || status.trim().isEmpty()) ? null : status;
+
         String orderBy = createOrderBy(pageable.getSort());
         long offset = pageable.getOffset();
         int limit = pageable.getPageSize();
 
-        Flux<Order> orders = orderRepository.findOrders(userId, status, startDate, endDate, orderBy, offset, limit);
-        Mono<Long> totalElements = orderRepository.countOrders(userId, status, startDate, endDate);
+        Flux<Order> orders = orderRepository.findOrders(userId, effectiveStatus, startDate, endDate, orderBy, offset, limit);
+        Mono<Long> totalElements = orderRepository.countOrders(userId, effectiveStatus, startDate, endDate);
 
         return orders
                 .map(orderMapper::toListDto)

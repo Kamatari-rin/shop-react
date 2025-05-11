@@ -1,32 +1,56 @@
 package org.example.controller;
 
-import org.example.exception.ProductClientException;
-import org.example.dto.ApiError;
-import org.example.exception.PurchaseException;
+import jakarta.validation.ConstraintViolationException;
+import lombok.extern.slf4j.Slf4j;
+import org.example.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.support.WebExchangeBindException;
 import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+@Slf4j
+public class GlobalExceptionHandler extends BaseExceptionHandler {
 
-    @ExceptionHandler(PurchaseException.class)
-    public ResponseEntity<ApiError> handlePurchaseException(PurchaseException ex, ServletWebRequest request) {
-        ApiError error = new ApiError(ex.getMessage(), request.getRequest().getRequestURI(), HttpStatus.BAD_REQUEST.value());
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(CartEmptyException.class)
+    public Mono<ResponseEntity<ApiError>> handleCartEmpty(CartEmptyException ex, ServerWebExchange exchange) {
+        log.debug("Cart empty: {}", ex.getMessage());
+        return createErrorResponse(ex, exchange, HttpStatus.BAD_REQUEST, "Cart Empty");
     }
 
-    @ExceptionHandler(ProductClientException.class)
-    public ResponseEntity<ApiError> handleProductClientException(ProductClientException ex, ServletWebRequest request) {
-        ApiError error = new ApiError(ex.getMessage(), request.getRequest().getRequestURI(), HttpStatus.SERVICE_UNAVAILABLE.value());
-        return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
+    @ExceptionHandler(PriceMismatchException.class)
+    public Mono<ResponseEntity<ApiError>> handlePriceMismatch(PriceMismatchException ex, ServerWebExchange exchange) {
+        log.debug("Price mismatch: {}", ex.getMessage());
+        return createErrorResponse(ex, exchange, HttpStatus.BAD_REQUEST, "Price Mismatch");
+    }
+
+    @ExceptionHandler(WebExchangeBindException.class)
+    public Mono<ResponseEntity<ApiError>> handleValidationException(WebExchangeBindException ex, ServerWebExchange exchange) {
+        String message = ex.getFieldErrors().stream()
+                .map(e -> e.getField() + ": " + e.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        log.debug("Validation error: {}", message);
+        return createErrorResponse(ex, exchange, HttpStatus.BAD_REQUEST, "Validation Error");
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Mono<ResponseEntity<ApiError>> handleConstraintViolation(ConstraintViolationException ex, ServerWebExchange exchange) {
+        String message = ex.getConstraintViolations().stream()
+                .map(cv -> cv.getPropertyPath() + ": " + cv.getMessage())
+                .collect(Collectors.joining(", "));
+        log.debug("Constraint violation: {}", message);
+        return createErrorResponse(ex, exchange, HttpStatus.BAD_REQUEST, "Validation Error");
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleGenericException(Exception ex, ServletWebRequest request) {
-        ApiError error = new ApiError("Internal server error", request.getRequest().getRequestURI(), HttpStatus.INTERNAL_SERVER_ERROR.value());
-        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    public Mono<ResponseEntity<ApiError>> handleGenericException(Exception ex, ServerWebExchange exchange) {
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
+        return createErrorResponse(ex, exchange, HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error");
     }
 }

@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Table("order_items")
 public record OrderItem(
         @Id Integer id,
-        @NonNull @Column("order_id") Integer orderId,
+        @Column("order_id") Integer orderId,
         @NonNull @Column("product_id") Integer productId,
         @NonNull Integer quantity,
         BigDecimal price,

@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f9fafb;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+.animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        height: 0;
+        opacity: 0;
+    }
+    to {
+        height: auto;
+        opacity: 1;
+    }
+}

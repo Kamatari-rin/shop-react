@@ -13,6 +13,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx768m -Xms512m
       - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_METRICS_EXPORTER=none
       - OTEL_SERVICE_NAME=api-gateway
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED=true
@@ -33,6 +34,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx512m -Xms256m -XX:+EnableDynamicAgentLoading
       - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_METRICS_EXPORTER=none
       - OTEL_SERVICE_NAME=admin-server
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED=true
@@ -56,6 +58,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx768m -Xms512m
       - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_METRICS_EXPORTER=none
       - OTEL_SERVICE_NAME=user-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED=true
@@ -79,6 +82,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx768m -Xms512m
       - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_METRICS_EXPORTER=none
       - OTEL_SERVICE_NAME=product-catalog
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED=true
@@ -102,6 +106,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx768m -Xms512m
       - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_METRICS_EXPORTER=none
       - OTEL_SERVICE_NAME=product-detail
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED=true
@@ -125,6 +130,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx768m -Xms512m
       - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_METRICS_EXPORTER=none
       - OTEL_SERVICE_NAME=cart-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED=true
@@ -148,6 +154,7 @@ services:
     environment:
       - JAVA_OPTS=-Xmx768m -Xms512m
       - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_METRICS_EXPORTER=none
       - OTEL_SERVICE_NAME=order-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
       - OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED=true
@@ -157,21 +164,29 @@ services:
     mem_limit: 1g
     mem_reservation: 512m
 
-#  purchase-service:
-#    build:
-#      context: ./purchase-service
-#      dockerfile: Dockerfile
-#    depends_on:
-#      db:
-#        condition: service_healthy
-#      db-migrations:
-#        condition: service_completed_successfully
-#    networks:
-#      - app-network
-#    environment:
-#      - JAVA_OPTS=-Xmx768m -Xms512m
-#    mem_limit: 1g
-#    mem_reservation: 512m
+  purchase-service:
+    build:
+      context: ./purchase-service
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      db-migrations:
+        condition: service_completed_successfully
+    networks:
+      - app-network
+    environment:
+      - JAVA_OPTS=-Xmx768m -Xms512m
+      - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_SERVICE_NAME=purchase-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+      - OTEL_INSTRUMENTATION_LOGBACK_MDC_ENABLED=true
+      - OTEL_LOGS_EXPORTER=none
+    volumes:
+      - ./otel/opentelemetry-javaagent.jar:/otel/opentelemetry-javaagent.jar
+    mem_limit: 1g
+    mem_reservation: 512m
 
   db:
     image: postgres:15
@@ -266,6 +281,19 @@ services:
       - elasticsearch
     networks:
       - app-network
+    mem_limit: 1g
+    mem_reservation: 512m
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+    depends_on:
+      - api-gateway
     mem_limit: 1g
     mem_reservation: 512m
 

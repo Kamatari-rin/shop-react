@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="corretto-21" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/admin-server" />
+            <option value="$PROJECT_DIR$/api-gateway" />
+            <option value="$PROJECT_DIR$/cart-service" />
+            <option value="$PROJECT_DIR$/common" />
+            <option value="$PROJECT_DIR$/db-migrations" />
+            <option value="$PROJECT_DIR$/order-service" />
+            <option value="$PROJECT_DIR$/product-catalog" />
+            <option value="$PROJECT_DIR$/product-detail" />
+            <option value="$PROJECT_DIR$/purchase-service" />
+            <option value="$PROJECT_DIR$/user-service" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

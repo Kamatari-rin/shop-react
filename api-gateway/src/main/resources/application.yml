@@ -7,40 +7,53 @@ spring:
     admin:
       client:
         url: http://admin-server:8081
-
   cloud:
     gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:3000"
+            allowedMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+            allowedHeaders: "*"
+            allowCredentials: true
       routes:
         - id: product-detail
           uri: http://product-detail:8080
           predicates:
-            - Path=/api/products/detail/**
+            - Path=/api/products/{id}
           filters:
-            - RewritePath=/api/products/detail/(?<segment>.*),/api/products/${segment}
+            - RewritePath=/api/products/(?<id>.*),/api/products/${id}
+          order: 1
         - id: product-catalog
           uri: http://product-catalog:8080
           predicates:
-            - Path=/api/products/**
+            - Path=/api/products,/api/products/**
+          order: 2
         - id: cart-service
           uri: http://cart-service:8080
           predicates:
             - Path=/api/cart/**
+          order: 3
         - id: order-service
           uri: http://order-service:8080
           predicates:
             - Path=/api/orders/**
+          order: 4
         - id: purchase-service
           uri: http://purchase-service:8080
           predicates:
-            - Path=/api/purchase/**
+            - Path=/api/purchases/**
+          order: 5
         - id: user-service
           uri: http://user-service:8080
           predicates:
             - Path=/api/users/**
+          order: 6
         - id: admin-server
           uri: http://admin-server:8081
           predicates:
             - Path=/admin/**
+          order: 7
 
 management:
   endpoints:
