@@ -297,5 +297,14 @@ services:
     mem_limit: 1g
     mem_reservation: 512m
 
+  redis:
+    image: redis:7.0
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    mem_limit: 512m
+    mem_reservation: 256m
+
 networks:
   app-network:
