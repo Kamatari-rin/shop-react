@@ -1,6 +1,7 @@
 package org.example.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.client.WalletClient;
 import org.example.dto.UserCreateDTO;
 import org.example.dto.UserDTO;
 import org.example.dto.UserUpdateDTO;
@@ -16,9 +17,9 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final WalletClient walletClient;
 
     @Override
     public Mono<UserDTO> createUser(UserCreateDTO userCreateDTO) {
@@ -33,7 +34,8 @@ public class UserServiceImpl implements UserService {
                     return user;
                 })
                 .flatMap(userRepository::save)
-                .flatMap(user -> userRepository.findById(user.getId()))
+                .flatMap(user -> walletClient.createWallet(user.getId())
+                        .then(userRepository.findById(user.getId())))
                 .map(userMapper::toDto);
     }
 

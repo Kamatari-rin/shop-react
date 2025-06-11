@@ -30,6 +30,11 @@ db:
         username: purchase_service_user
         password: purchase-service_password
         changelog: db/changelog/purchase/changelog-purchase.xml
+      wallet:
+        url: jdbc:postgresql://db:5432/walletdb
+        username: wallet_service_user
+        password: wallet-service_password
+        changelog: db/changelog/wallets/changelog-wallets.xml
 
 info:
   app:

@@ -20,10 +20,13 @@ spring:
       client:
         url: http://admin-server:8081
   cache:
-    cache-names: healthCache,products
-    caffeine:
-      spec: maximumSize=500,expireAfterAccess=600s
-
+    cache-names: healthCache
+    redis:
+      time-to-live: PT5S
+  data:
+    redis:
+      host: redis
+      port: 6379
 product:
   detail:
     url: http://product-detail:8080/api/products

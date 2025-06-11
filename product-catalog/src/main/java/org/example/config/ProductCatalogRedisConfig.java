@@ -12,6 +12,6 @@ public class ProductCatalogRedisConfig {
     @Bean
     public ReactiveRedisTemplate<String, ProductDTO> productRedisTemplate(
             ReactiveRedisConnectionFactory factory, RedisConfig redisConfig) {
-        return redisConfig.createReactiveRedisTemplate(factory, redisConfig.objectMapper(), ProductDTO.class);
+        return redisConfig.createReactiveRedisTemplate(factory, ProductDTO.class);
     }
 }

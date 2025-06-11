@@ -10,8 +10,8 @@ import org.springframework.data.redis.core.ReactiveRedisTemplate;
 public class ProductDetailRedisConfig {
 
     @Bean
-    public ReactiveRedisTemplate<String, ProductDetailDTO> reactiveRedisTemplate(
+    public ReactiveRedisTemplate<String, ProductDetailDTO> productDetailRedisTemplate(
             ReactiveRedisConnectionFactory factory, RedisConfig redisConfig) {
-        return redisConfig.createReactiveRedisTemplate(factory, redisConfig.objectMapper(), ProductDetailDTO.class);
+        return redisConfig.createReactiveRedisTemplate(factory, ProductDetailDTO.class);
     }
 }

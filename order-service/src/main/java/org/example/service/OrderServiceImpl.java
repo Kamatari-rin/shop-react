@@ -1,7 +1,6 @@
 package org.example.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.example.client.ProductClient;
 import org.example.dto.*;
 import org.example.enums.OrderStatus;
@@ -12,8 +11,8 @@ import org.example.model.Order;
 import org.example.model.OrderItem;
 import org.example.repository.OrderItemRepository;
 import org.example.repository.OrderRepository;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -30,65 +29,72 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class OrderServiceImpl implements OrderService {
+    private static final Logger log = LoggerFactory.getLogger(OrderServiceImpl.class);
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final OrderMapper orderMapper;
     private final ProductClient productClient;
+    private final OrderCacheManager cacheManager;
 
     @Override
-    @Cacheable(value = "orders", key = "#userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize + '-' + #status + '-' + #startDate + '-' + #endDate")
     public Mono<OrderListDTO> getOrders(UUID userId, Pageable pageable, String status, LocalDateTime startDate, LocalDateTime endDate) {
         String effectiveStatus = (status == null || status.trim().isEmpty()) ? null : status;
+        String cacheKey = cacheManager.buildOrdersCacheKey(userId, pageable, effectiveStatus, startDate, endDate);
 
-        String orderBy = createOrderBy(pageable.getSort());
-        long offset = pageable.getOffset();
-        int limit = pageable.getPageSize();
+        return cacheManager.getOrderList(cacheKey)
+                .switchIfEmpty(Mono.defer(() -> {
+                    String orderBy = createOrderBy(pageable.getSort());
+                    long offset = pageable.getOffset();
+                    int limit = pageable.getPageSize();
 
-        Flux<Order> orders = orderRepository.findOrders(userId, effectiveStatus, startDate, endDate, orderBy, offset, limit);
-        Mono<Long> totalElements = orderRepository.countOrders(userId, effectiveStatus, startDate, endDate);
+                    Flux<Order> orders = orderRepository.findOrders(userId, effectiveStatus, startDate, endDate, orderBy, offset, limit);
+                    Mono<Long> totalElements = orderRepository.countOrders(userId, effectiveStatus, startDate, endDate);
 
-        return orders
-                .map(orderMapper::toListDto)
-                .collectList()
-                .zipWith(totalElements)
-                .map(tuple -> createPage(tuple.getT1(), tuple.getT2(), pageable, OrderListDTO::new));
+                    return orders
+                            .map(orderMapper::toListDto)
+                            .collectList()
+                            .zipWith(totalElements)
+                            .map(tuple -> createPage(tuple.getT1(), tuple.getT2(), pageable, OrderListDTO::new))
+                            .flatMap(dto -> cacheManager.cacheOrderList(cacheKey, userId, Mono.just(dto)));
+                }));
     }
 
     @Override
-    @Cacheable(value = "orders", key = "#id + '-' + #userId")
     public Mono<OrderDetailDTO> getOrderDetail(Integer id, UUID userId) {
-        return orderRepository.findByIdAndUserId(id, userId)
-                .switchIfEmpty(Mono.error(new OrderNotFoundException(id)))
-                .flatMap(order -> loadOrderItems(order)
-                        .map(items -> orderMapper.toDto(order, items))
-                        .flatMap(dto -> enrichItems(dto.items(), dto::id)
-                                .map(enrichedItems -> new OrderDetailDTO(dto.id(), dto.userId(), dto.orderDate(),
-                                        dto.status(), dto.totalAmount(), enrichedItems))));
+        String cacheKey = cacheManager.buildOrderDetailCacheKey(id, userId);
+
+        return cacheManager.getOrderDetail(cacheKey)
+                .switchIfEmpty(Mono.defer(() -> orderRepository.findByIdAndUserId(id, userId)
+                        .switchIfEmpty(Mono.error(new OrderNotFoundException(id)))
+                        .flatMap(order -> loadOrderItems(order)
+                                .map(items -> orderMapper.toDto(order, items))
+                                .flatMap(dto -> enrichItems(dto.items(), dto::id)
+                                        .map(enrichedItems -> new OrderDetailDTO(dto.id(), dto.userId(), dto.orderDate(),
+                                                dto.status(), dto.totalAmount(), enrichedItems))))
+                        .flatMap(dto -> cacheManager.cacheOrderDetail(cacheKey, userId, Mono.just(dto)))));
     }
 
     @Override
-    @Cacheable(value = "orderItems", key = "#orderId + '-' + #userId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Mono<OrderItemListDTO> getOrderItems(Integer orderId, UUID userId, Pageable pageable) {
-        long offset = pageable.getOffset();
-        int limit = pageable.getPageSize();
+        String cacheKey = cacheManager.buildOrderItemsCacheKey(orderId, userId, pageable);
 
-        return orderRepository.findByIdAndUserId(orderId, userId)
-                .switchIfEmpty(Mono.error(new OrderNotFoundException(orderId)))
-                .flatMap(order -> orderItemRepository.findByOrderId(orderId, offset, limit)
-                        .map(orderMapper::toItemDto)
-                        .collectList()
-                        .zipWith(orderItemRepository.countByOrderId(orderId))
-                        .map(tuple -> createPage(tuple.getT1(), tuple.getT2(), pageable, OrderItemListDTO::new))
-                        .flatMap(dto -> enrichItems(dto.items(), () -> null)
-                                .map(enrichedItems -> new OrderItemListDTO(enrichedItems, dto.page(), dto.size(),
-                                        dto.totalPages(), dto.totalElements()))));
+        return cacheManager.getOrderItems(cacheKey)
+                .switchIfEmpty(Mono.defer(() -> orderRepository.findByIdAndUserId(orderId, userId)
+                        .switchIfEmpty(Mono.error(new OrderNotFoundException(orderId)))
+                        .flatMap(order -> orderItemRepository.findByOrderId(orderId, pageable.getOffset(), pageable.getPageSize())
+                                .map(orderMapper::toItemDto)
+                                .collectList()
+                                .zipWith(orderItemRepository.countByOrderId(orderId))
+                                .map(tuple -> createPage(tuple.getT1(), tuple.getT2(), pageable, OrderItemListDTO::new))
+                                .flatMap(dto -> enrichItems(dto.items(), () -> null)
+                                        .map(enrichedItems -> new OrderItemListDTO(enrichedItems, dto.page(), dto.size(),
+                                                dto.totalPages(), dto.totalElements())))
+                                .flatMap(dto -> cacheManager.cacheOrderItems(cacheKey, userId, Mono.just(dto))))));
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = {"orders", "orderItems"}, key = "#request.userId()")
     public Mono<OrderDetailDTO> createOrder(CreateOrderRequestDTO request) {
         long uniqueProductIds = request.items().stream()
                 .map(CreateOrderRequestDTO.OrderItemRequestDTO::productId)
@@ -107,22 +113,21 @@ public class OrderServiceImpl implements OrderService {
                 .flatMap(products -> {
                     Map<Integer, ProductDetailDTO> productMap = products.stream()
                             .collect(Collectors.toMap(ProductDetailDTO::id, p -> p));
-
                     List<OrderItem> orderItems = buildOrderItems(request, productMap);
                     BigDecimal totalAmount = calculateTotalAmount(orderItems);
-
                     Order order = new Order(null, request.userId(), LocalDateTime.now(), OrderStatus.PENDING, totalAmount);
                     return saveOrderWithItems(order, orderItems);
-                });
+                })
+                .doOnSuccess(dto -> cacheManager.clearCaches(request.userId()).subscribe());
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = {"orders", "orderItems"}, key = "#userId")
     public Mono<Void> deleteOrder(Integer id, UUID userId) {
         return orderRepository.findByIdAndUserId(id, userId)
                 .switchIfEmpty(Mono.error(new OrderNotFoundException(id)))
-                .flatMap(order -> orderRepository.deleteByIdAndUserId(id, userId));
+                .flatMap(order -> orderRepository.deleteByIdAndUserId(id, userId))
+                .doOnSuccess(v -> cacheManager.clearCaches(userId).subscribe());
     }
 
     private Mono<List<OrderItem>> loadOrderItems(Order order) {
