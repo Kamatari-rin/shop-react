@@ -17,6 +17,20 @@ spring:
     admin:
       client:
         url: http://admin-server:8081
+  cache:
+    cache-names: carts
+    redis:
+      time-to-live: PT5S
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.htm
 
 management:
   endpoints:

@@ -75,7 +75,8 @@ def webfluxModules = [project(':cart-service'),
 					  				  project(':common'),
 					  				  project(':user-service'),
 									  project(':order-service'),
-					  				  project(':purchase-service')
+					  				  project(':purchase-service'),
+					  				  project(':wallet-service')
 									 ]
 
 def adminClientModules = [project(':cart-service'),
@@ -84,7 +85,8 @@ def adminClientModules = [project(':cart-service'),
 						  				  project(':user-service'),
 						  				  project(':api-gateway'),
 						  				  project(':order-service'),
-						  				  project(':purchase-service')
+						  				  project(':purchase-service'),
+						                  project(':wallet-service')
 										 ]
 
 def r2dbcModules = [project(':cart-service'),
@@ -93,7 +95,8 @@ def r2dbcModules = [project(':cart-service'),
 									project(':common'),
 									project(':user-service'),
 									project(':order-service'),
-									project(':purchase-service')
+									project(':purchase-service'),
+					                project(':wallet-service')
 								   ]
 
 def actuatorModules = [project(':cart-service'),
@@ -104,7 +107,8 @@ def actuatorModules = [project(':cart-service'),
 					   				   project(':user-service'),
 					   				   project(':common'),
 					   				   project(':order-service'),
-					   				   project(':purchase-service')
+					   				   project(':purchase-service'),
+					   			       project(':wallet-service')
 									  ]
 
 def cacheModules = [project(':cart-service'),
@@ -113,7 +117,8 @@ def cacheModules = [project(':cart-service'),
 									project(':common'),
 									project(':user-service'),
 									project(':order-service'),
-									project(':purchase-service')
+									project(':purchase-service'),
+								    project(':wallet-service')
 								   ]
 
 def mapstructModules = [project(':cart-service'),
@@ -121,7 +126,8 @@ def mapstructModules = [project(':cart-service'),
 										project(':product-catalog'),
 										project(':user-service'),
 										project(':order-service'),
-										project(':purchase-service')
+										project(':purchase-service'),
+									    project(':wallet-service')
 									   ]
 
 def logbookModules = [project(':cart-service'),
@@ -131,7 +137,8 @@ def logbookModules = [project(':cart-service'),
 					  				  project(':admin-server'),
 					  				  project(':user-service'),
 					  				  project(':order-service'),
-					  				  project(':purchase-service')
+					  				  project(':purchase-service'),
+					  				  project(':wallet-service')
 									 ]
 
 webfluxModules.each { proj ->
@@ -140,6 +147,7 @@ webfluxModules.each { proj ->
 			implementation 'org.springframework.boot:spring-boot-starter-webflux'
 			implementation 'io.projectreactor:reactor-tools:3.6.7'
 			implementation 'io.opentelemetry:opentelemetry-api:1.49.0'
+			implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.6.0'
 		}
 	}
 }
@@ -165,6 +173,7 @@ actuatorModules.each { proj ->
 	configure(proj) {
 		dependencies {
 			implementation 'org.springframework.boot:spring-boot-starter-actuator'
+			implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 		}
 	}
 }
@@ -173,6 +182,7 @@ cacheModules.each { proj ->
 	configure(proj) {
 		dependencies {
 			implementation 'org.springframework.boot:spring-boot-starter-cache'
+			implementation 'org.springframework.boot:spring-boot-starter-data-redis-reactive'
 		}
 	}
 }
@@ -243,6 +253,14 @@ project(':purchase-service') {
 	}
 }
 
+project(':wallet-service') {
+	dependencies {
+		implementation project(':common')
+		implementation 'org.springframework.boot:spring-boot-starter-validation'
+		runtimeOnly 'org.postgresql:postgresql'
+	}
+}
+
 project(':api-gateway') {
 	dependencies {
 		implementation 'org.springframework.boot:spring-boot-starter'
@@ -254,7 +272,7 @@ project(':admin-server') {
 	dependencies {
 		implementation project(':common')
 		implementation 'org.springframework.boot:spring-boot-starter-webflux'
-		implementation 'de.codecentric:spring-boot-admin-starter-server:3.4.5'
+		implementation 'de.codecentric:spring-boot-admin-starter-server:3.4.3'
 	}
 }
 

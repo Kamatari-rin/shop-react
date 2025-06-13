@@ -21,7 +21,6 @@ public class ProductClientImpl implements ProductClient {
     private String productDetailUrl;
 
     @Override
-    @Cacheable(value = "products", key = "#productId")
     public Mono<ProductDetailDTO> getProductById(Integer productId) {
         return webClient.get()
                 .uri(productDetailUrl + "/{productId}", productId)

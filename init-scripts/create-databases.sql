@@ -3,6 +3,7 @@ CREATE DATABASE productdb;
 CREATE DATABASE cartdb;
 CREATE DATABASE ordersdb;
 CREATE DATABASE purchasedb;
+CREATE DATABASE walletdb;
 
 -- User Management Service
 CREATE USER user_service_user WITH ENCRYPTED PASSWORD 'user-service_password';
@@ -24,6 +25,10 @@ GRANT ALL PRIVILEGES ON DATABASE ordersdb TO orders_service_user;
 CREATE USER purchase_service_user WITH ENCRYPTED PASSWORD 'purchase-service_password';
 GRANT ALL PRIVILEGES ON DATABASE purchasedb TO purchase_service_user;
 
+-- Wallet Service
+CREATE USER wallet_service_user WITH ENCRYPTED PASSWORD 'wallet-service_password';
+GRANT ALL PRIVILEGES ON DATABASE walletdb TO wallet_service_user;
+
 \c userdb
 GRANT ALL PRIVILEGES ON SCHEMA public TO user_service_user;
 
@@ -38,3 +43,6 @@ GRANT ALL PRIVILEGES ON SCHEMA public TO orders_service_user;
 
 \c purchasedb
 GRANT ALL PRIVILEGES ON SCHEMA public TO purchase_service_user;
+
+\c walletdb
+GRANT ALL PRIVILEGES ON SCHEMA public TO wallet_service_user;

@@ -20,10 +20,13 @@ spring:
       client:
         url: http://admin-server:8081
   cache:
-    cache-names: purchases,products
-    caffeine:
-      spec: maximumSize=500,expireAfterAccess=600s
-
+    cache-names: healthCache
+    redis:
+      time-to-live: PT5S
+  data:
+    redis:
+      host: redis
+      port: 6379
 cart:
   service:
     url: http://cart-service:8080/api/cart
@@ -33,6 +36,9 @@ product:
 order:
   service:
     url: http://order-service:8080/api/orders
+wallet:
+  service:
+    url: http://wallet-service:8080/api/wallets
 
 management:
   endpoints:
