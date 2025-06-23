@@ -1,12 +1,10 @@
 import axios from 'axios';
+import api, { getUserId } from './api';
 import { PurchaseResponseDTO } from '../types';
 
-const api = axios.create({
-    baseURL: 'http://localhost:8080',
-});
-
-export const createPurchase = async (userId: string): Promise<PurchaseResponseDTO> => {
+export const createPurchase = async (): Promise<PurchaseResponseDTO> => {
     try {
+        const userId = getUserId();
         const response = await api.post<PurchaseResponseDTO>(`/api/purchases/${userId}`);
         return response.data;
     } catch (error) {

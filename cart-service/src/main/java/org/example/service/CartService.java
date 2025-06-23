@@ -8,8 +8,14 @@ import java.util.UUID;
 
 public interface CartService {
     Mono<CartDTO> getCartByUserId(UUID userId);
+    Mono<CartDTO> getOrCreateAnonymousCart(UUID id);
     Mono<CartDTO> addItemToCart(UUID userId, CartItemRequestDTO request);
+    Mono<CartDTO> addItemToAnonymousCart(UUID id, CartItemRequestDTO request);
     Mono<CartDTO> removeItemFromCart(UUID userId, Integer productId);
+    Mono<CartDTO> removeItemFromAnonymousCart(UUID id, Integer productId);
     Mono<CartDTO> updateItemQuantity(UUID userId, CartItemRequestDTO request);
+    Mono<CartDTO> updateItemQuantityInAnonymousCart(UUID id, CartItemRequestDTO request);
     Mono<Void> clearCart(UUID userId);
+    Mono<Void> clearAnonymousCart(UUID id);
+    Mono<CartDTO> mergeCarts(UUID userId, UUID id);
 }

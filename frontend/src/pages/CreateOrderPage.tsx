@@ -14,7 +14,7 @@ export default function CreateOrderPage() {
     const [paymentMethod, setPaymentMethod] = useState('card');
 
     const mutation = useMutation<PurchaseResponseDTO, Error, { userId: string }>({
-        mutationFn: (variables) => createPurchase(variables.userId),
+        mutationFn: () => createPurchase(),
         onSuccess: () => {
             alert('Покупка успешно создана!');
             navigate('/orders');

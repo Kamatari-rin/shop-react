@@ -6,6 +6,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Table("cart_items")
 @Getter
@@ -18,7 +19,7 @@ public class CartItem {
     private Integer id;
 
     @Column("cart_id")
-    private Integer cartId;
+    private UUID cartId;
 
     @Column("product_id")
     private Integer productId;

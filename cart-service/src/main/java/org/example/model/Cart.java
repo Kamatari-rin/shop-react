@@ -18,7 +18,7 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Cart {
     @Id
-    private Integer id;
+    private UUID id;
 
     @Column("user_id")
     private UUID userId;

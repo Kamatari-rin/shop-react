@@ -7,20 +7,20 @@
 
     <changeSet id="001_create_cart_tables" author="admin">
         <createTable tableName="carts">
-            <column name="id" type="SERIAL">
-                <constraints primaryKey="true"/>
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="user_id" type="UUID">
+            <column name="user_id" type="UUID"/>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
         </createTable>
 
         <createTable tableName="cart_items">
             <column name="id" type="SERIAL">
                 <constraints primaryKey="true"/>
             </column>
-            <column name="cart_id" type="INTEGER">
+            <column name="cart_id" type="UUID">
                 <constraints nullable="false"/>
             </column>
             <column name="product_id" type="INTEGER">
@@ -34,6 +34,12 @@
 
         <sql>
             ALTER TABLE cart_items
+                ADD CONSTRAINT fk_cart_items_cart_id
+                    FOREIGN KEY (cart_id) REFERENCES carts(id);
+        </sql>
+
+        <sql>
+            ALTER TABLE cart_items
                 ADD CONSTRAINT chk_cart_item_quantity
                     CHECK (quantity > 0);
         </sql>
@@ -43,23 +49,19 @@
         </createIndex>
     </changeSet>
 
-    <changeSet id="sync-carts-id-seq" author="fix">
-        <sql>
-            SELECT setval('carts_id_seq', (SELECT MAX(id) FROM carts));
-        </sql>
-    </changeSet>
-
-    <changeSet id="sync-cart-items-id-seq" author="fix">
-        <sql>
-            SELECT setval('cart_items_id_seq', (SELECT MAX(id) FROM cart_items));
-        </sql>
-    </changeSet>
-
     <changeSet id="add-unique-cart-items" author="fix">
         <sql>
             ALTER TABLE cart_items
                 ADD CONSTRAINT uk_cart_items_cart_id_product_id
                     UNIQUE (cart_id, product_id);
+        </sql>
+    </changeSet>
+
+    <changeSet id="002_add_unique_user_id" author="fix">
+        <sql>
+            ALTER TABLE carts
+                ADD CONSTRAINT uk_carts_user_id
+                    UNIQUE (user_id);
         </sql>
     </changeSet>
 </databaseChangeLog>

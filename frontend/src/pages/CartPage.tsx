@@ -1,33 +1,22 @@
-import { useQuery } from '@tanstack/react-query';
-import { getCart, removeItemFromCart, updateItemQuantity, clearCart } from '../api/cart';
-import { useCartStore } from '../store';
+import { useCartStore } from '../store/cartStore';
 import { useEffect } from 'react';
 import { formatPrice } from '../utils';
 import { Link } from 'react-router-dom';
-
-const TEST_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
+import keycloak from '../keycloak';
 
 export default function CartPage() {
-    const { cart, setCart } = useCartStore();
+    const { cart, removeItem, updateQuantity, clearCart, syncWithServer, fetchCart } = useCartStore();
 
-    const { data, isLoading, error } = useQuery({
-        queryKey: ['cart', TEST_USER_ID],
-        queryFn: () => getCart(TEST_USER_ID),
-        enabled: true,
-    });
-
-    // Синхронизация с сервером
     useEffect(() => {
-        if (data) {
-            setCart(data);
+        fetchCart();
+        if (keycloak.authenticated) {
+            syncWithServer();
         }
-    }, [data, setCart]);
+    }, [fetchCart, syncWithServer, keycloak.authenticated]);
 
     const handleUpdateQuantity = async (productId: number, quantity: number) => {
-        if (quantity < 1) return;
         try {
-            const updatedCart = await updateItemQuantity(TEST_USER_ID, { productId, quantity });
-            setCart(updatedCart);
+            await updateQuantity(productId, quantity);
         } catch (error) {
             console.error('Ошибка обновления количества:', error);
             alert('Не удалось обновить количество');
@@ -36,8 +25,7 @@ export default function CartPage() {
 
     const handleRemoveItem = async (productId: number) => {
         try {
-            const updatedCart = await removeItemFromCart(TEST_USER_ID, productId);
-            setCart(updatedCart);
+            await removeItem(productId);
         } catch (error) {
             console.error('Ошибка удаления товара:', error);
             alert('Не удалось удалить товар');
@@ -46,8 +34,7 @@ export default function CartPage() {
 
     const handleClearCart = async () => {
         try {
-            await clearCart(TEST_USER_ID);
-            setCart({ ...cart!, items: [], totalAmount: 0 });
+            await clearCart();
             alert('Корзина очищена');
         } catch (error) {
             console.error('Ошибка очистки корзины:', error);
@@ -55,23 +42,24 @@ export default function CartPage() {
         }
     };
 
-    if (isLoading) return <div className="container mx-auto p-4">Загрузка...</div>;
-    if (error) return <div className="container mx-auto p-4">Ошибка: {(error as Error).message}</div>;
+    if (!cart) {
+        return <div className="container mx-auto p-4">Загрузка...</div>;
+    }
 
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">Корзина</h1>
-            {cart?.items.length === 0 || !cart ? (
+            {cart.items.length === 0 ? (
                 <p>Корзина пуста</p>
             ) : (
                 <div className="space-y-4">
                     {cart.items.map((item) => (
                         <div
-                            key={item.id}
+                            key={item.productId}
                             className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-md"
                         >
                             <img
-                                src={item.imageUrl}
+                                src={item.imageUrl || 'https://via.placeholder.com/64'}
                                 alt={item.productName}
                                 className="w-16 h-16 object-contain"
                             />
@@ -114,12 +102,21 @@ export default function CartPage() {
                             >
                                 Очистить корзину
                             </button>
-                            <Link
-                                to="/create-order"
-                                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                Оформить заказ
-                            </Link>
+                            {keycloak.authenticated ? (
+                                <Link
+                                    to="/create-order"
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Оформить заказ
+                                </Link>
+                            ) : (
+                                <button
+                                    onClick={() => keycloak.login()}
+                                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Войти для оформления
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -2,8 +2,7 @@ import { ProductDTO } from '../../types';
 import { addItemToCart, updateItemQuantity, removeItemFromCart } from '../../api/cart';
 import { useCartStore } from '../../store';
 import { Link } from 'react-router-dom';
-
-const TEST_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
+import {formatPrice} from "../../utils";
 
 interface ProductCardProps {
     product: ProductDTO;
@@ -17,7 +16,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
     const handleAddToCart = async () => {
         try {
-            const updatedCart = await addItemToCart(TEST_USER_ID, {
+            const updatedCart = await addItemToCart({
                 productId: product.id,
                 quantity: 1,
             });
@@ -31,10 +30,10 @@ export default function ProductCard({ product }: ProductCardProps) {
     const handleUpdateQuantity = async (newQuantity: number) => {
         try {
             if (newQuantity < 1) {
-                const updatedCart = await removeItemFromCart(TEST_USER_ID, product.id);
+                const updatedCart = await removeItemFromCart(product.id);
                 setCart(updatedCart);
             } else {
-                const updatedCart = await updateItemQuantity(TEST_USER_ID, {
+                const updatedCart = await updateItemQuantity({
                     productId: product.id,
                     quantity: newQuantity,
                 });
@@ -46,9 +45,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         }
     };
 
-    const formatPrice = (price: number) => {
-        return Math.floor(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
-    };
+
 
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col w-full max-w-xs mx-auto transition-transform hover:scale-105">

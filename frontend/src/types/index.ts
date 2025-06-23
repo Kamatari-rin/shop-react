@@ -3,7 +3,6 @@ export interface ProductDTO {
     name: string;
     price: number;
     imageUrl: string;
-    categoryId: number;
 }
 
 export interface ProductPage {
@@ -27,8 +26,8 @@ export interface ProductDetailDTO {
 }
 
 export interface CartDTO {
-    id: number;
-    userId: string;
+    id: string;
+    userId: string | null;
     items: CartItemDTO[];
     totalAmount: number;
     createdAt: string;
@@ -92,7 +91,6 @@ export interface OrderItemDTO {
 }
 
 export interface CreateOrderRequestDTO {
-    userId: string;
     items: CartItemRequestDTO[];
 }
 
@@ -115,3 +113,4 @@ export enum PaymentStatus {
     FAILED = 'FAILED',
     REFUNDED = 'REFUNDED',
 }
+

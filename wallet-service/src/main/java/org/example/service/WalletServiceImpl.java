@@ -4,13 +4,13 @@ package org.example.service;
 import lombok.RequiredArgsConstructor;
 import org.example.dto.WalletDTO;
 import org.example.exception.InsufficientBalanceException;
-import org.example.exception.WalletAlreadyExistsException;
 import org.example.exception.WalletNotFoundException;
 import org.example.mapper.WalletMapper;
 import org.example.model.Wallet;
 import org.example.repository.WalletRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,19 +33,21 @@ public class WalletServiceImpl implements WalletService {
     private static final Duration CACHE_TTL = Duration.ofSeconds(600);
 
     @Override
-    public Mono<WalletDTO> getWallet(UUID userId) {
-        log.debug("Fetching wallet for user: {}", userId);
+    @Transactional
+    public Mono<WalletDTO> getOrCreateWallet(UUID userId) {
+        log.debug("Fetching or creating wallet for user: {}", userId);
         String cacheKey = CACHE_KEY_PREFIX + userId;
         return redisTemplate.opsForValue().get(cacheKey)
                 .switchIfEmpty(Mono.defer(() -> walletRepository.findByUserIdForUpdate(userId)
+                        .switchIfEmpty(Mono.defer(() -> createNewWallet(userId)))
                         .map(walletMapper::toDto)
                         .flatMap(dto -> redisTemplate.opsForValue()
                                 .set(cacheKey, dto, CACHE_TTL)
-                                .thenReturn(dto))))
-                .switchIfEmpty(Mono.error(new WalletNotFoundException(userId)));
+                                .thenReturn(dto))));
     }
 
     @Override
+    @Transactional
     public Mono<Void> debitBalance(UUID userId, BigDecimal amount) {
         log.debug("Debiting balance for user: {}, amount: {}", userId, amount);
         String cacheKey = CACHE_KEY_PREFIX + userId;
@@ -64,6 +66,7 @@ public class WalletServiceImpl implements WalletService {
     }
 
     @Override
+    @Transactional
     public Mono<Void> creditBalance(UUID userId, BigDecimal amount) {
         log.debug("Crediting balance for user: {}, amount: {}", userId, amount);
         String cacheKey = CACHE_KEY_PREFIX + userId;
@@ -74,26 +77,9 @@ public class WalletServiceImpl implements WalletService {
                         .then());
     }
 
-    @Override
-    @Transactional
-    public Mono<WalletDTO> createWallet(UUID userId) {
-        log.debug("Creating wallet for user: {}", userId);
-        String cacheKey = CACHE_KEY_PREFIX + userId;
-
-        return walletRepository.findByUserIdForUpdate(userId)
-                .flatMap(wallet -> Mono.<WalletDTO>error(new WalletAlreadyExistsException(userId)))
-                .switchIfEmpty(Mono.defer(() ->
-                        createNewWallet(userId)
-                                .map(walletMapper::toDto)
-                                .flatMap(dto -> redisTemplate.opsForValue()
-                                        .set(cacheKey, dto, CACHE_TTL)
-                                        .thenReturn(dto)
-                                )
-                ));
-    }
-
     private Mono<Wallet> createNewWallet(UUID userId) {
         Wallet wallet = new Wallet(null, userId, BigDecimal.ZERO, null, null);
-        return walletRepository.save(wallet);
+        return walletRepository.save(wallet)
+                .onErrorResume(DuplicateKeyException.class, e -> walletRepository.findByUserIdForUpdate(userId));
     }
 }

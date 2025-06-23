@@ -217,7 +217,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_MULTIPLE_DATABASES: userdb,productdb,cartdb,ordersdb,purchasedb,walletdb
+      POSTGRES_MULTIPLE_DATABASES: userdb,productdb,cartdb,ordersdb,purchasedb,walletdb,keycloak
       POSTGRES_SHARED_BUFFERS: 512MB
       POSTGRES_WORK_MEM: 8MB
     ports:
@@ -305,8 +305,14 @@ services:
       - elasticsearch
     networks:
       - app-network
-    mem_limit: 1g
-    mem_reservation: 512m
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.5'
+          memory: 512m
 
   frontend:
     build:
@@ -327,8 +333,43 @@ services:
       - "6379:6379"
     networks:
       - app-network
-    mem_limit: 512m
-    mem_reservation: 256m
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.5'
+          memory: 256m
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.0
+    command: [ "start-dev" ]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      DB_VENDOR: postgres
+      DB_ADDR: db
+      DB_DATABASE: keycloak
+      DB_USER: keycloak
+      DB_PASSWORD: keycloak_password
+      KC_LOG_LEVEL: DEBUG
+      KC_FEATURES: token-exchange
+    ports:
+      - "8082:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
+        reservations:
+          cpus: '0.5'
+          memory: 256m
 
 networks:
   app-network:

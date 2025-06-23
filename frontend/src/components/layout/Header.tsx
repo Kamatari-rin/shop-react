@@ -1,9 +1,47 @@
 import { Link } from 'react-router-dom';
 import {useCartStore} from "../../store";
+import Modal from 'react-modal';
+import {useEffect, useState} from "react";
+import keycloak from '../../keycloak';
+
+
+// Настройка react-modal
+Modal.setAppElement('#root');
 
 export default function Header() {
     const { cart } = useCartStore();
     const cartItemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) || 0;
+    const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userName, setUserName] = useState('');
+
+    // Инициализация Keycloak
+    useEffect(() => {
+        keycloak
+            .init({ onLoad: 'check-sso', pkceMethod: 'S256' })
+            .then((authenticated) => {
+                setIsAuthenticated(authenticated);
+                if (authenticated) {
+                    setUserName(keycloak.tokenParsed?.preferred_username || 'User');
+                }
+            })
+            .catch((error) => {
+                console.error('Keycloak initialization failed:', error);
+            });
+    }, []);
+
+    const handleLogin = () => {
+        keycloak.login();
+    };
+
+    const handleRegister = () => {
+        keycloak.register();
+    };
+
+    const handleLogout = () => {
+        keycloak.logout();
+    };
 
     return (
         <header className="bg-white shadow-md">
@@ -11,7 +49,7 @@ export default function Header() {
                 <Link to="/" className="text-2xl font-bold text-gray-900">
                     Yandex Shop
                 </Link>
-                <nav className="flex gap-6">
+                <nav className="flex gap-6 items-center">
                     <Link to="/cart" className="flex items-center gap-2 text-gray-700 hover:text-blue-600">
                         <svg
                             className="w-5 h-5"
@@ -51,8 +89,82 @@ export default function Header() {
                         </svg>
                         Заказы
                     </Link>
+                    {isAuthenticated ? (
+                        <div className="flex items-center gap-4">
+                            <span className="text-gray-700">Привет, {userName}!</span>
+                            <button
+                                onClick={handleLogout}
+                                className="text-gray-700 hover:text-blue-600"
+                            >
+                                Выйти
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setIsLoginModalOpen(true)}
+                                className="text-gray-700 hover:text-blue-600"
+                            >
+                                Войти
+                            </button>
+                            <button
+                                onClick={() => setIsRegisterModalOpen(true)}
+                                className="text-gray-700 hover:text-blue-600"
+                            >
+                                Регистрация
+                            </button>
+                        </div>
+                    )}
                 </nav>
             </div>
+
+            {/* Модальное окно для входа */}
+            <Modal
+                isOpen={isLoginModalOpen}
+                onRequestClose={() => setIsLoginModalOpen(false)}
+                className="fixed inset-0 flex items-center justify-center p-4"
+                overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+            >
+                <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h2 className="text-2xl font-bold mb-4">Вход</h2>
+                    <button
+                        onClick={handleLogin}
+                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                    >
+                        Войти через Keycloak
+                    </button>
+                    <button
+                        onClick={() => setIsLoginModalOpen(false)}
+                        className="mt-4 w-full bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400"
+                    >
+                        Отмена
+                    </button>
+                </div>
+            </Modal>
+
+            {/* Модальное окно для регистрации */}
+            <Modal
+                isOpen={isRegisterModalOpen}
+                onRequestClose={() => setIsRegisterModalOpen(false)}
+                className="fixed inset-0 flex items-center justify-center p-4"
+                overlayClassName="fixed inset-0 bg-black bg-opacity-50"
+            >
+                <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                    <h2 className="text-2xl font-bold mb-4">Регистрация</h2>
+                    <button
+                        onClick={handleRegister}
+                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                    >
+                        Зарегистрироваться через Keycloak
+                    </button>
+                    <button
+                        onClick={() => setIsRegisterModalOpen(false)}
+                        className="mt-4 w-full bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400"
+                    >
+                        Отмена
+                    </button>
+                </div>
+            </Modal>
         </header>
     );
 }

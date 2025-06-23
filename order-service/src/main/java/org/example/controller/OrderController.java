@@ -12,6 +12,8 @@ import org.example.service.OrderService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -28,51 +30,57 @@ import java.util.UUID;
 public class OrderController {
     private final OrderService orderService;
 
-    @GetMapping("/{userId}")
+    @GetMapping
     public Mono<ResponseEntity<OrderListDTO>> getOrders(
-            @PathVariable UUID userId,
+            @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) LocalDateTime startDate,
             @RequestParam(required = false) LocalDateTime endDate,
             Pageable pageable) {
+        UUID userId = UUID.fromString(jwt.getSubject());
         log.debug("Fetching orders for user: {} with status: {}, startDate: {}, endDate: {}", userId, status, startDate, endDate);
         return orderService.getOrders(userId, pageable, status, startDate, endDate)
                 .map(ResponseEntity::ok)
                 .defaultIfEmpty(ResponseEntity.ok(new OrderListDTO(List.of(), 0, pageable.getPageSize(), 0, 0)));
     }
 
-    @GetMapping("/{userId}/{orderId}")
+    @GetMapping("/{orderId}")
     public Mono<ResponseEntity<OrderDetailDTO>> getOrderDetail(
-            @PathVariable UUID userId,
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable @Min(1) Integer orderId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
         log.debug("Fetching order with id: {} for user: {}", orderId, userId);
         return orderService.getOrderDetail(orderId, userId)
                 .map(ResponseEntity::ok);
     }
 
-    @GetMapping("/{userId}/{orderId}/items")
+    @GetMapping("/{orderId}/items")
     public Mono<ResponseEntity<OrderItemListDTO>> getOrderItems(
-            @PathVariable UUID userId,
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable @Min(1) Integer orderId,
             Pageable pageable) {
+        UUID userId = UUID.fromString(jwt.getSubject());
         log.debug("Fetching order items for order: {} and user: {}", orderId, userId);
         return orderService.getOrderItems(orderId, userId, pageable)
                 .map(ResponseEntity::ok);
     }
 
-    @PostMapping("/{userId}")
+    @PostMapping
     public Mono<ResponseEntity<OrderDetailDTO>> createOrder(
-            @PathVariable UUID userId,
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody CreateOrderRequestDTO request) {
+        UUID userId = UUID.fromString(jwt.getSubject());
         log.debug("Creating order for user: {}", userId);
-        return orderService.createOrder(new CreateOrderRequestDTO(userId, request.items()))
+        return orderService.createOrder(userId, request)
                 .map(order -> ResponseEntity.status(HttpStatus.CREATED).body(order));
     }
 
-    @DeleteMapping("/{userId}/{orderId}")
+
+    @DeleteMapping("/{orderId}")
     public Mono<ResponseEntity<Void>> deleteOrder(
-            @PathVariable UUID userId,
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable @Min(1) Integer orderId) {
+        UUID userId = UUID.fromString(jwt.getSubject());
         log.debug("Deleting order with id: {} for user: {}", orderId, userId);
         return orderService.deleteOrder(orderId, userId)
                 .then(Mono.just(ResponseEntity.noContent().build()));
