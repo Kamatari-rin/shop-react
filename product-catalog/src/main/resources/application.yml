@@ -26,6 +26,21 @@ spring:
     redis:
       host: redis
       port: 6379
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
+
+security-config:
+  enabled: true
+  permit-all-paths:
+    - "/actuator/**"
+    - "/api/products/**"
+  client-id: frontend-client
+  jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
+  allowed-roles:
+    - "ROLE_USER"
 
 management:
   endpoints:
@@ -60,3 +75,4 @@ logging:
     org.springframework.boot.autoconfigure: INFO
     org.springframework.web.filter: WARN
     io.opentelemetry: DEBUG
+    org.example.security.SecurityConfig: WARN

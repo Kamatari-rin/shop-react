@@ -6,4 +6,5 @@ const keycloak = new Keycloak({
     clientId: 'frontend-client',
 });
 
+
 export default keycloak;

@@ -143,15 +143,17 @@ def logbookModules = [project(':cart-service'),
 
 def securityResourceServerModules = [
 									project(':api-gateway'),
-									project(':user-service'),
 									project(':cart-service'),
 									project(':order-service'),
 									project(':purchase-service'),
-									project(':wallet-service')
+									project(':wallet-service'),
+									project(':common')
 ]
 
 def securityClientModules = [
-									project(':purchase-service')
+									project(':purchase-service'),
+									project(':api-gateway')
+
 ]
 
 webfluxModules.each { proj ->

@@ -60,7 +60,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: "http://localhost:8082/realms/shop-realm/protocol/openid-connect/certs"
+          jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
+
 management:
   endpoints:
     web:
@@ -86,6 +87,6 @@ logging:
     org.zalando.logbook: TRACE
     org.zalando.logbook.netty: TRACE
     org.springframework.boot.actuate: WARN
-    org.springframework.web: WARN
+    org.springframework.web: DEBUG
     io.opentelemetry: WARN
-    org.springframework.security: DEBUG
+#    org.springframework.security: DEBUG

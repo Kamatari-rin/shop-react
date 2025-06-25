@@ -25,6 +25,33 @@ spring:
     redis:
       host: redis
       port: 6379
+  security:
+    oauth2:
+      client:
+        registration:
+          cart-service:
+            client-id: cart-service
+            client-secret: ZdBu4e28rbQqN5q6K189gB5WlrIECkjT
+            authorization-grant-type: client_credentials
+            provider: keycloak
+        provider:
+          keycloak:
+            token-uri: http://keycloak:8080/realms/shop-realm/protocol/openid-connect/token
+
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
+
+security-config:
+  enabled: true
+  permit-all-paths:
+      - "/actuator/**"
+      - "/api/cart/anonymous/**"
+  client-id: frontend-client
+  jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
+  allowed-roles:
+      - "ROLE_USER"
+      - "purchase-service"
 
 springdoc:
   api-docs:
@@ -60,13 +87,14 @@ logging:
   level:
     org.zalando.logbook: TRACE
     org.zalando.logbook.netty: TRACE
-    org.example: INFO
+    org.example: DEBUG
     org.example.util: INFO
     org.springframework.boot.actuate: WARN
     org.springframework.web: WARN
     org.springframework.boot.autoconfigure: INFO
     org.springframework.web.filter: WARN
     io.opentelemetry: DEBUG
+    org.springframework.security: DEBUG
 
 product:
   detail:
