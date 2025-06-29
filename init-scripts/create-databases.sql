@@ -4,6 +4,7 @@ CREATE DATABASE cartdb;
 CREATE DATABASE ordersdb;
 CREATE DATABASE purchasedb;
 CREATE DATABASE walletdb;
+CREATE DATABASE keycloak;
 
 -- User Management Service
 CREATE USER user_service_user WITH ENCRYPTED PASSWORD 'user-service_password';
@@ -29,6 +30,10 @@ GRANT ALL PRIVILEGES ON DATABASE purchasedb TO purchase_service_user;
 CREATE USER wallet_service_user WITH ENCRYPTED PASSWORD 'wallet-service_password';
 GRANT ALL PRIVILEGES ON DATABASE walletdb TO wallet_service_user;
 
+-- Keycloak
+CREATE USER keycloak WITH ENCRYPTED PASSWORD 'keycloak_password';
+GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
+
 \c userdb
 GRANT ALL PRIVILEGES ON SCHEMA public TO user_service_user;
 
@@ -46,3 +51,6 @@ GRANT ALL PRIVILEGES ON SCHEMA public TO purchase_service_user;
 
 \c walletdb
 GRANT ALL PRIVILEGES ON SCHEMA public TO wallet_service_user;
+
+\c keycloak
+GRANT ALL PRIVILEGES ON SCHEMA public TO keycloak;

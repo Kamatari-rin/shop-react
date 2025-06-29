@@ -45,15 +45,27 @@ spring:
             - Path=/api/purchases/**
           order: 5
         - id: user-service
-          uri: http://user-service:8080
+          uri: http://user-service:8080/
           predicates:
             - Path=/api/users/**
           order: 6
         - id: admin-server
-          uri: http://admin-server:8081
+          uri: http://admin-server:8080/
           predicates:
             - Path=/admin/**
           order: 7
+        - id: wallet-service
+          uri: http://wallet-service:8080
+          predicates:
+            - Path=/api/wallets/**
+          order: 8
+      discovery:
+        enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
 
 management:
   endpoints:
@@ -63,20 +75,23 @@ management:
   endpoint:
     health:
       show-details: always
-
 info:
   app:
     name: ${spring.application.name}
     description: This is the ${spring.application.name} module.
     version: 1.0.0
-
-logbook: {}
-
+logbook:
+  format: http
+  include: /api/**
+  exclude: /actuator/**
+  write:
+    level: TRACE
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     org.zalando.logbook: TRACE
     org.zalando.logbook.netty: TRACE
     org.springframework.boot.actuate: WARN
-    org.springframework.web: WARN
-    io.opentelemetry: DEBUG
+    org.springframework.web: DEBUG
+    io.opentelemetry: WARN
+#    org.springframework.security: DEBUG

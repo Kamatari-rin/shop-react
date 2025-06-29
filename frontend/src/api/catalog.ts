@@ -1,9 +1,5 @@
-import axios from 'axios';
-import {ProductDetailDTO, ProductPage} from '../types';
-
-const api = axios.create({
-    baseURL: 'http://localhost:8080',
-});
+import api from './api';
+import { ProductDetailDTO, ProductPage } from '../types';
 
 export interface ProductFilters {
     categoryId?: number;

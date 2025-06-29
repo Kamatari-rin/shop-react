@@ -1,15 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'react-router-dom';
 import { getProductById } from '../api/catalog';
-import { addItemToCart } from '../api/cart';
-import { useCartStore } from '../store';
-
-
-const TEST_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
+import { useCartStore } from '../store/cartStore.ts';
+import {formatPrice} from "../utils";
 
 export default function ProductPage() {
     const { id } = useParams<{ id: string }>();
-    const { setCart } = useCartStore();
+    const { addItem } = useCartStore();
 
     const { data: product, isLoading, error } = useQuery({
         queryKey: ['product', id],
@@ -19,20 +16,11 @@ export default function ProductPage() {
     const handleAddToCart = async () => {
         if (!product) return;
         try {
-            const updatedCart = await addItemToCart(TEST_USER_ID, {
-                productId: product.id,
-                quantity: 1,
-            });
-            setCart(updatedCart);
+            await addItem(product.id, 1);
         } catch (error) {
             console.error('Ошибка добавления в корзину:', error);
             alert('Не удалось добавить товар в корзину');
         }
-    };
-
-    // Форматирование цены: без копеек, с пробелами
-    const formatPrice = (price: number) => {
-        return Math.floor(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
     };
 
     if (isLoading) return <div className="container mx-auto p-4">Загрузка...</div>;

@@ -1,11 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
-import { useCartStore } from '../store';
+import { useCartStore } from '../store/cartStore';
 import { createPurchase } from '../api/purchase';
 import { PurchaseResponseDTO } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { formatPrice } from '../utils';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { toast } from 'react-toastify'; // Для уведомлений
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function CreateOrderPage() {
     const { cart } = useCartStore();
@@ -13,29 +15,28 @@ export default function CreateOrderPage() {
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('card');
 
-    const mutation = useMutation<PurchaseResponseDTO, Error, { userId: string }>({
-        mutationFn: (variables) => createPurchase(variables.userId),
+    const mutation = useMutation<PurchaseResponseDTO, Error>({
+        mutationFn: createPurchase,
         onSuccess: () => {
-            alert('Покупка успешно создана!');
+            toast.success('Покупка успешно создана!');
             navigate('/orders');
         },
         onError: (error) => {
             console.error('Ошибка создания покупки:', error);
-            alert('Не удалось создать покупку');
+            toast.error('Не удалось создать покупку');
         },
     });
 
     const handleCreatePurchase = () => {
         if (!cart?.items.length) {
-            alert('Корзина пуста');
+            toast.error('Корзина пуста');
             return;
         }
         if (!deliveryAddress.trim()) {
-            alert('Пожалуйста, введите адрес доставки');
+            toast.error('Пожалуйста, введите адрес доставки');
             return;
         }
-        const userId = '550e8400-e29b-41d4-a716-446655440000';
-        mutation.mutate({ userId });
+        mutation.mutate(); // Теперь без параметров
     };
 
     return (
@@ -82,6 +83,7 @@ export default function CreateOrderPage() {
                             onChange={(e) => setDeliveryAddress(e.target.value)}
                             placeholder="Введите адрес доставки"
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                            required
                         />
                     </div>
                     <div className="space-y-4">
@@ -90,6 +92,7 @@ export default function CreateOrderPage() {
                             value={paymentMethod}
                             onChange={(e) => setPaymentMethod(e.target.value)}
                             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                            required
                         >
                             <option value="card">Кредитная карта</option>
                             <option value="cash">Наличными</option>

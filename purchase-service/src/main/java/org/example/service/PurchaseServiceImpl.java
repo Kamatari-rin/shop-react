@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuples;
@@ -52,20 +53,30 @@ public class PurchaseServiceImpl implements PurchaseService {
                     BigDecimal totalAmount = tuple.getT2();
                     return createOrder(cart)
                             .flatMap(order -> savePurchase(userId, order)
-                                    .map(purchase -> Tuples.of(purchase, totalAmount))
-                                    .onErrorResume(e -> walletClient.creditBalance(userId, totalAmount)
-                                            .then(Mono.error(e))))
+                                    .map(purchase -> Tuples.of(purchase, totalAmount)))
                             .flatMap(purchaseTuple -> clearCart(userId)
-                                    .thenReturn(purchaseTuple));
+                                    .thenReturn(purchaseTuple)
+                                    .onErrorResume(e -> rollbackPurchase(userId, purchaseTuple.getT1(), totalAmount)
+                                            .then(Mono.error(e))))
+                            .onErrorResume(e -> rollbackBalance(userId, totalAmount)
+                                    .then(Mono.error(e)));
                 })
                 .map(tuple -> purchaseMapper.toResponseDto(tuple.getT1(), tuple.getT2()))
                 .as(transactionalOperator::transactional)
                 .onErrorResume(InsufficientBalanceException.class, e -> {
-                    log.error("Insufficient balance for user: {}", userId, e);
+                    log.error("Insufficient balance for user: {}, error: {}", userId, e.getMessage(), e);
                     return Mono.error(e);
                 })
                 .onErrorResume(WalletNotFoundException.class, e -> {
-                    log.error("Wallet not found for user: {}", userId, e);
+                    log.error("Wallet not found for user: {}, error: {}", userId, e.getMessage(), e);
+                    return Mono.error(e);
+                })
+                .onErrorResume(CartEmptyException.class, e -> {
+                    log.error("Cart is empty for user: {}, error: {}", userId, e.getMessage(), e);
+                    return Mono.error(e);
+                })
+                .onErrorResume(PriceMismatchException.class, e -> {
+                    log.error("Price mismatch for user: {}, error: {}", userId, e.getMessage(), e);
                     return Mono.error(e);
                 });
     }
@@ -101,7 +112,7 @@ public class PurchaseServiceImpl implements PurchaseService {
     }
 
     private Mono<OrderDetailDTO> createOrder(CartDTO cart) {
-        log.debug("Creating order for cart: {}", cart.id());
+        log.debug("Creating order for cart: {}, user: {}", cart.id(), cart.userId());
         CreateOrderRequestDTO request = new CreateOrderRequestDTO(
                 cart.userId(),
                 cart.items().stream()
@@ -110,11 +121,13 @@ public class PurchaseServiceImpl implements PurchaseService {
                                 item.quantity()))
                         .toList()
         );
-        return orderClient.createOrder(request);
+        return orderClient.createOrder(request)
+                .retry(2)
+                .onErrorMap(WebClientResponseException.class, e -> new RuntimeException("Failed to create order: " + e.getMessage(), e));
     }
 
     private Mono<Purchase> savePurchase(UUID userId, OrderDetailDTO order) {
-        log.debug("Saving purchase for order: {}", order.id());
+        log.debug("Saving purchase for order: {}, user: {}", order.id(), userId);
         Purchase purchase = new Purchase(
                 null,
                 order.id(),
@@ -128,6 +141,22 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     private Mono<Void> clearCart(UUID userId) {
         log.debug("Clearing cart for user: {}", userId);
-        return cartClient.clearCart(userId);
+        return cartClient.clearCart(userId)
+                .retry(2)
+                .onErrorMap(e -> new RuntimeException("Failed to clear cart: " + e.getMessage(), e));
+    }
+
+    private Mono<Void> rollbackBalance(UUID userId, BigDecimal amount) {
+        log.debug("Rolling back balance for user: {}, amount: {}", userId, amount);
+        return walletClient.creditBalance(userId, amount)
+                .retry(2)
+                .onErrorMap(e -> new RuntimeException("Failed to rollback balance: " + e.getMessage(), e));
+    }
+
+    private Mono<Void> rollbackPurchase(UUID userId, Purchase purchase, BigDecimal amount) {
+        log.debug("Rolling back purchase and balance for user: {}, purchase: {}, amount: {}", userId, purchase.orderId(), amount);
+        return purchaseRepository.delete(purchase)
+                .then(rollbackBalance(userId, amount))
+                .onErrorMap(e -> new RuntimeException("Failed to rollback purchase and balance: " + e.getMessage(), e));
     }
 }

@@ -141,6 +141,22 @@ def logbookModules = [project(':cart-service'),
 					  				  project(':wallet-service')
 									 ]
 
+def securityResourceServerModules = [
+									project(':api-gateway'),
+									project(':cart-service'),
+									project(':order-service'),
+									project(':purchase-service'),
+									project(':wallet-service'),
+									project(':common')
+]
+
+def securityClientModules = [
+									project(':purchase-service'),
+									project(':api-gateway'),
+									project(':common')
+
+]
+
 webfluxModules.each { proj ->
 	configure(proj) {
 		dependencies {
@@ -205,6 +221,24 @@ logbookModules.each { proj ->
 			implementation 'net.logstash.logback:logstash-logback-encoder:8.0'
 			implementation 'io.opentelemetry:opentelemetry-api:1.49.0'
 			implementation 'io.opentelemetry.instrumentation:opentelemetry-logback-appender-1.0:2.14.0-alpha'
+		}
+	}
+}
+
+securityResourceServerModules.each { proj ->
+	configure(proj) {
+		dependencies {
+			implementation 'org.springframework.boot:spring-boot-starter-security'
+			implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+		}
+	}
+}
+
+securityClientModules.each { proj ->
+	configure(proj) {
+		dependencies {
+			implementation 'org.springframework.boot:spring-boot-starter-security'
+			implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 		}
 	}
 }
