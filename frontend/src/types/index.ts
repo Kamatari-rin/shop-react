@@ -90,10 +90,6 @@ export interface OrderItemDTO {
     imageUrl: string;
 }
 
-export interface CreateOrderRequestDTO {
-    items: CartItemRequestDTO[];
-}
-
 export interface CartItemRequestDTO {
     productId: number;
     quantity: number;

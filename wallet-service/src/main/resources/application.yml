@@ -15,10 +15,10 @@ spring:
       name: WalletServiceHikariPool
       validation-query: SELECT 1
       validation-query-timeout: 3s
-  boot:
-    admin:
-      client:
-        url: http://admin-server:8081
+#  boot:
+#    admin:
+#      client:
+#        url: http://admin-server:8081
   cache:
     cache-names: wallets
     redis:
@@ -33,8 +33,8 @@ spring:
         registration:
           wallet-service:
             client-id: wallet-service
-            client-secret: Ree5ppd60XxCxKZKmVgF25NkYndfKEop
-            authorization-grant-type: client_credentials
+            client-secret: Iuf1WpFIw5G3pM2eGYSRpFZQzlRXJnib
+            authorization-grant-type: token-exchange
             provider: keycloak
         provider:
           keycloak:
@@ -51,8 +51,19 @@ security-config:
   jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
   allowed-roles:
     - "ROLE_USER"
-    - "purchase-service"
+    - "ROLE_purchase-service"
 
+app:
+  webclient:
+    enabled: true
+    default-client-registration-id: wallet-service
+    client-secret: Iuf1WpFIw5G3pM2eGYSRpFZQzlRXJnib
+    token-exchange-endpoint: http://keycloak:8080/realms/shop-realm/protocol/openid-connect/token
+    audiences:
+      - cart-service
+      - order-service
+      - product-detail
+      - wallet-service
 management:
   endpoints:
     web:
@@ -86,3 +97,6 @@ logging:
     org.springframework.boot.autoconfigure: INFO
     org.springframework.web.filter: WARN
     io.opentelemetry: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2.server.resource.authentication.JwtReactiveAuthenticationManager: DEBUG
+    org.springframework.security.oauth2.jwt: DEBUG

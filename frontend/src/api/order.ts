@@ -1,5 +1,5 @@
 import api from './api';
-import { OrderDetailDTO, OrderListDTO, OrderItemListDTO, CreateOrderRequestDTO } from '../types';
+import { OrderDetailDTO, OrderListDTO, OrderItemListDTO } from '../types';
 
 interface OrderQueryParams {
     status?: string;
@@ -41,10 +41,6 @@ export const getOrderItems = async (orderId: number, page?: number, size?: numbe
     return response.data;
 };
 
-export const createOrder = async (request: CreateOrderRequestDTO): Promise<OrderDetailDTO> => {
-    const response = await api.post<OrderDetailDTO>('/api/orders', request);
-    return response.data;
-};
 
 export const deleteOrder = async (orderId: number): Promise<void> => {
     await api.delete(`/api/orders/${orderId}`);

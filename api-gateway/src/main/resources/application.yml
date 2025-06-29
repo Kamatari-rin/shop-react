@@ -54,6 +54,11 @@ spring:
           predicates:
             - Path=/admin/**
           order: 7
+        - id: wallet-service
+          uri: http://wallet-service:8080
+          predicates:
+            - Path=/api/wallets/**
+          order: 8
       discovery:
         enabled: false
   security:

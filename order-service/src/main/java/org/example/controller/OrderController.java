@@ -1,5 +1,9 @@
 package org.example.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +16,7 @@ import org.example.service.OrderService;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
@@ -65,16 +70,21 @@ public class OrderController {
                 .map(ResponseEntity::ok);
     }
 
+    @Operation(summary = "Create order", description = "Creates a new order for the user")
+    @ApiResponse(responseCode = "201", description = "Order created",
+            content = @Content(schema = @Schema(implementation = OrderDetailDTO.class)))
     @PostMapping
     public Mono<ResponseEntity<OrderDetailDTO>> createOrder(
-            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody CreateOrderRequestDTO request) {
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = request.userId();
         log.debug("Creating order for user: {}", userId);
         return orderService.createOrder(userId, request)
-                .map(order -> ResponseEntity.status(HttpStatus.CREATED).body(order));
+                .map(order -> ResponseEntity.status(HttpStatus.CREATED).body(order))
+                .onErrorMap(e -> {
+                    log.error("Error creating order for user {}: {}", userId, e.getMessage(), e);
+                    return e instanceof RuntimeException ? e : new RuntimeException("Failed to create order", e);
+                });
     }
-
 
     @DeleteMapping("/{orderId}")
     public Mono<ResponseEntity<Void>> deleteOrder(

@@ -16,6 +16,7 @@ public class SecurityProperties {
     private String clientId;
     private String jwkSetUri;
     private List<String> allowedRoles = new ArrayList<>();
+    private String clientSecret;
 
     @PostConstruct
     public void validate() {

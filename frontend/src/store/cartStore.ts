@@ -42,7 +42,7 @@ export const useCartStore = create<CartState>((set, get) => ({
                 set({ cart: updatedCart });
             } catch (error) {
                 console.error('Failed to add item to server cart:', error);
-                throw error; // Пробрасываем ошибку для обработки в компоненте
+                throw error;
             }
         } else {
             try {
@@ -57,7 +57,7 @@ export const useCartStore = create<CartState>((set, get) => ({
                 set({ cart: updatedCart });
             } catch (error) {
                 console.error('Failed to add item to anonymous cart:', error);
-                throw error; // Пробрасываем ошибку для обработки в компоненте
+                throw error;
             }
         }
     },

@@ -1,14 +1,16 @@
 import { ProductDTO } from '../../types';
-import { useCartStore } from '../../store';
+import { useCartStore } from '../../store/cartStore.ts';
 import { Link } from 'react-router-dom';
-import {formatPrice} from "../../utils";
+import { formatPrice } from '../../utils';
+import { toast } from 'react-toastify';
 
 interface ProductCardProps {
     product: ProductDTO;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-    const { cart, addItem, removeItem, updateQuantity } = useCartStore();
+    const { cart, addItem, removeItem, updateQuantity } = useCartStore((state) => state);
+
 
     const itemInCart = cart?.items.find((item) => item.productId === product.id);
     const quantity = itemInCart ? itemInCart.quantity : 0;

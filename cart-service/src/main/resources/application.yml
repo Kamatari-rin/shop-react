@@ -13,10 +13,10 @@ spring:
       max-life-time: 600s
       name: CartServiceHikariPool
       validation-query-timeout: 3s
-  boot:
-    admin:
-      client:
-        url: http://admin-server:8081
+#  boot:
+#    admin:
+#      client:
+#        url: http://admin-server:8081
   cache:
     cache-names: carts
     redis:
@@ -31,13 +31,12 @@ spring:
         registration:
           cart-service:
             client-id: cart-service
-            client-secret: ZdBu4e28rbQqN5q6K189gB5WlrIECkjT
+            client-secret: NMj69PmLVvWoW0ycynJjzNfD6wgFqbwy
             authorization-grant-type: client_credentials
             provider: keycloak
         provider:
           keycloak:
             token-uri: http://keycloak:8080/realms/shop-realm/protocol/openid-connect/token
-
       resourceserver:
         jwt:
           jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
@@ -51,7 +50,18 @@ security-config:
   jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
   allowed-roles:
       - "ROLE_USER"
-      - "purchase-service"
+      - "ROLE_purchase-service"
+app:
+  webclient:
+    enabled: true
+    default-client-registration-id: cart-service
+    client-secret: NMj69PmLVvWoW0ycynJjzNfD6wgFqbwy
+    token-exchange-endpoint: http://keycloak:8080/realms/shop-realm/protocol/openid-connect/token
+    audiences:
+      - cart-service
+      - order-service
+      - product-detail
+      - wallet-service
 
 springdoc:
   api-docs:
@@ -95,7 +105,8 @@ logging:
     org.springframework.web.filter: WARN
     io.opentelemetry: DEBUG
     org.springframework.security: DEBUG
-
+    org.springframework.security.oauth2.server.resource.authentication.JwtReactiveAuthenticationManager: DEBUG
+    org.springframework.security.oauth2.jwt: DEBUG
 product:
   detail:
     url: http://product-detail:8080/api/products/

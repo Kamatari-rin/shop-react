@@ -26,7 +26,6 @@ public class SecurityConfigCondition implements Condition {
         boolean hasAllRequiredProps =
                 props.getPermitAllPaths() != null &&
                         !props.getPermitAllPaths().isEmpty() &&
-                        props.getClientId() != null &&
                         props.getJwkSetUri() != null &&
                         props.getAllowedRoles() != null &&
                         !props.getAllowedRoles().isEmpty();
@@ -35,9 +34,8 @@ public class SecurityConfigCondition implements Condition {
             logger.info("SecurityConfig disabled via 'security-config.enabled=false'");
         } else if (!hasAllRequiredProps) {
             logger.warn("SecurityConfig not activated: missing or empty required security-config properties");
-            logger.warn("Checked properties: permit-all-paths={}, client-id={}, jwk-set-uri={}, allowed-roles={}",
+            logger.warn("Checked properties: permit-all-paths={}, jwk-set-uri={}, allowed-roles={}",
                     props.getPermitAllPaths(),
-                    props.getClientId(),
                     props.getJwkSetUri(),
                     props.getAllowedRoles());
         } else {

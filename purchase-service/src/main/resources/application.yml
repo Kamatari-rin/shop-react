@@ -15,10 +15,10 @@ spring:
       name: PurchaseServiceHikariPool
       validation-query: SELECT 1
       validation-query-timeout: 3s
-  boot:
-    admin:
-      client:
-        url: http://admin-server:8081
+#  boot:
+#    admin:
+#      client:
+#        url: http://admin-server:8081
   cache:
     cache-names: healthCache
     redis:
@@ -33,7 +33,7 @@ spring:
         registration:
           purchase-service:
             client-id: purchase-service
-            client-secret: WaNepkaJ5S4V1nniVp0W4vnqHS5QR3hP
+            client-secret: 4sZU3thkhP3Z5uWsX9ZZ8CospOLxE5UN
             authorization-grant-type: client_credentials
             provider: keycloak
         provider:
@@ -47,13 +47,23 @@ security-config:
   enabled: true
   permit-all-paths:
     - "/actuator/**"
+    - "/admin-server/**"
   client-id: frontend-client
   jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
   allowed-roles:
     - "ROLE_USER"
 
 app:
-  default-client-id: purchase-service
+  webclient:
+    enabled: true
+    default-client-registration-id: purchase-service
+    client-secret: 4sZU3thkhP3Z5uWsX9ZZ8CospOLxE5UN
+    token-exchange-endpoint: http://keycloak:8080/realms/shop-realm/protocol/openid-connect/token
+    audiences:
+      - cart-service
+      - order-service
+      - product-detail
+      - wallet-service
 
 cart:
   service:
@@ -66,7 +76,7 @@ order:
     url: http://order-service:8080/api/orders
 wallet:
   service:
-    url: http://wallet-service:8080/api/wallets
+    url: http://wallet-service:8080
 
 management:
   endpoints:
@@ -101,3 +111,5 @@ logging:
     org.springframework.boot.autoconfigure: INFO
     org.springframework.web.filter: WARN
     io.opentelemetry: DEBUG
+    org.example.security: DEBUG
+    org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG

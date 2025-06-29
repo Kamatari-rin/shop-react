@@ -42,7 +42,9 @@ security-config:
     - "purchase-service"
     - "cart-service"
     - "order-service"
-
+app:
+  webclient:
+    enabled: false
 management:
   endpoints:
     web:

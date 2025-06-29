@@ -25,7 +25,6 @@ public class SecurityConfig {
         this.props = props;
         log.debug("SecurityConfig initialized with the following settings:");
         log.debug("permitAllPaths: {}", props.getPermitAllPaths());
-        log.debug("clientId: {}", props.getClientId());
         log.debug("jwkSetUri: {}", props.getJwkSetUri());
         log.debug("allowedRoles: {}", props.getAllowedRoles());
     }
@@ -35,7 +34,6 @@ public class SecurityConfig {
         return SecurityConfigSupport.buildDefaultSecurityFilterChain(
                 http,
                 props.getPermitAllPaths(),
-                props.getClientId(),
                 props.getJwkSetUri(),
                 props.getAllowedRoles()
         );

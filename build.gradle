@@ -152,7 +152,8 @@ def securityResourceServerModules = [
 
 def securityClientModules = [
 									project(':purchase-service'),
-									project(':api-gateway')
+									project(':api-gateway'),
+									project(':common')
 
 ]
 

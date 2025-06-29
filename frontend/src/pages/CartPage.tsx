@@ -1,8 +1,10 @@
 import { useCartStore } from '../store/cartStore';
 import { useEffect } from 'react';
 import { formatPrice } from '../utils';
-import { Link } from 'react-router-dom';
 import keycloak from '../keycloak';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom';
 
 export default function CartPage() {
     const { cart, removeItem, updateQuantity, clearCart, syncWithServer, fetchCart } = useCartStore();
@@ -19,7 +21,7 @@ export default function CartPage() {
             await updateQuantity(productId, quantity);
         } catch (error) {
             console.error('Ошибка обновления количества:', error);
-            alert('Не удалось обновить количество');
+            toast.error('Не удалось обновить количество');
         }
     };
 
@@ -28,17 +30,17 @@ export default function CartPage() {
             await removeItem(productId);
         } catch (error) {
             console.error('Ошибка удаления товара:', error);
-            alert('Не удалось удалить товар');
+            toast.error('Не удалось удалить товар');
         }
     };
 
     const handleClearCart = async () => {
         try {
             await clearCart();
-            alert('Корзина очищена');
+            toast.success('Корзина очищена');
         } catch (error) {
             console.error('Ошибка очистки корзины:', error);
-            alert('Не удалось очистить корзину');
+            toast.error('Не удалось очистить корзину');
         }
     };
 

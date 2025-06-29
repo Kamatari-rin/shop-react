@@ -12,7 +12,6 @@ public class SecurityConfigSupport {
     public static SecurityWebFilterChain buildDefaultSecurityFilterChain(
             ServerHttpSecurity http,
             List<String> permitAllPaths,
-            String clientId,
             String jwkSetUri,
             List<String> allowedRoles
     ) {
@@ -34,7 +33,7 @@ public class SecurityConfigSupport {
 
         http.oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt
-                        .jwtAuthenticationConverter(new CustomJwtAuthenticationConverter(clientId))
+                        .jwtAuthenticationConverter(new CustomJwtAuthenticationConverter())
                         .jwkSetUri(jwkSetUri)
                 )
         );
