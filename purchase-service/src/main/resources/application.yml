@@ -33,7 +33,7 @@ spring:
         registration:
           purchase-service:
             client-id: purchase-service
-            client-secret: 4sZU3thkhP3Z5uWsX9ZZ8CospOLxE5UN
+            client-secret: ZPS3iCUincXmTiFndGhNmZsocJVZCW49
             authorization-grant-type: client_credentials
             provider: keycloak
         provider:
