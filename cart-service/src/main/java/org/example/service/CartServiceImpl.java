@@ -13,6 +13,7 @@ import org.example.model.CartItem;
 import org.example.repository.CartItemRepository;
 import org.example.repository.CartRepository;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
@@ -20,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -40,6 +42,18 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
+    public Mono<CartDTO> getOrCreateAnonymousCart(UUID id) {
+        return cartRepository.findById(id)
+                .switchIfEmpty(Mono.defer(() -> {
+                    Cart newCart = Cart.builder()
+                            .build();
+                    return cartRepository.save(newCart);
+                }))
+                .flatMap(this::buildCartDTO);
+    }
+
+    @Override
+    @Transactional
     public Mono<CartDTO> addItemToCart(UUID userId, CartItemRequestDTO request) {
         return validateRequest(request)
                 .flatMap(req -> getOrCreateCart(userId)
@@ -49,8 +63,31 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
+    public Mono<CartDTO> addItemToAnonymousCart(UUID id, CartItemRequestDTO request) {
+        return validateRequest(request)
+                .flatMap(req -> cartRepository.findById(id)
+                        .switchIfEmpty(Mono.defer(() -> {
+                            Cart newCart = Cart.builder()
+                                    .build();
+                            return cartRepository.save(newCart);
+                        }))
+                        .flatMap(cart -> addOrUpdateCartItem(cart, req))
+                        .flatMap(this::buildCartDTO));
+    }
+
+    @Override
+    @Transactional
     public Mono<CartDTO> removeItemFromCart(UUID userId, Integer productId) {
         return getOrCreateCart(userId)
+                .flatMap(cart -> removeCartItem(cart, productId))
+                .flatMap(this::buildCartDTO);
+    }
+
+    @Override
+    @Transactional
+    public Mono<CartDTO> removeItemFromAnonymousCart(UUID id, Integer productId) {
+        return cartRepository.findById(id)
+                .switchIfEmpty(Mono.error(new CartNotFoundException(id)))
                 .flatMap(cart -> removeCartItem(cart, productId))
                 .flatMap(this::buildCartDTO);
     }
@@ -66,25 +103,66 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
+    public Mono<CartDTO> updateItemQuantityInAnonymousCart(UUID id, CartItemRequestDTO request) {
+        return validateRequest(request)
+                .flatMap(req -> cartRepository.findById(id)
+                        .switchIfEmpty(Mono.error(new CartNotFoundException(id)))
+                        .flatMap(cart -> updateCartItemQuantity(cart, req))
+                        .flatMap(this::buildCartDTO));
+    }
+
+    @Override
+    @Transactional
     public Mono<Void> clearCart(UUID userId) {
         return cartRepository.findByUserId(userId)
                 .switchIfEmpty(Mono.error(new CartNotFoundException(userId)))
                 .flatMap(cart -> cartItemRepository.findByCartId(cart.getId())
                         .flatMap(cartItemRepository::delete)
-                        .then(Mono.empty()));
+                        .then(cartRepository.delete(cart)));
     }
+
+    @Override
+    @Transactional
+    public Mono<Void> clearAnonymousCart(UUID id) {
+        return cartRepository.findById(id)
+                .switchIfEmpty(Mono.error(new CartNotFoundException(id)))
+                .flatMap(cart -> cartItemRepository.findByCartId(cart.getId())
+                        .flatMap(cartItemRepository::delete)
+                        .then(cartRepository.delete(cart)));
+    }
+
+    @Override
+    @Transactional
+    public Mono<CartDTO> mergeCarts(UUID userId, UUID id) {
+        return cartRepository.findById(id)
+                .switchIfEmpty(Mono.error(new CartNotFoundException(id)))
+                .flatMap(anonymousCart -> getOrCreateCart(userId)
+                        .flatMap(userCart ->
+                                cartItemRepository.findByCartId(anonymousCart.getId())
+                                        .flatMap(item -> addOrUpdateCartItem(userCart, new CartItemRequestDTO(item.getProductId(), item.getQuantity())))
+                                        .collectList()
+                                        .then(cartItemRepository.findByCartId(anonymousCart.getId())
+                                                .flatMap(cartItemRepository::delete)
+                                                .then())
+                                        .then(cartRepository.delete(anonymousCart))
+                                        .then(Mono.just(userCart))
+                        )
+                        .flatMap(this::buildCartDTO)
+                );
+    }
+
 
     private Mono<Cart> getOrCreateCart(UUID userId) {
         return cartRepository.findByUserId(userId)
                 .switchIfEmpty(Mono.defer(() -> {
                     Cart newCart = Cart.builder()
                             .userId(userId)
-                            .createdAt(LocalDateTime.now())
                             .build();
                     return cartRepository.save(newCart)
                             .onErrorResume(DuplicateKeyException.class, e -> cartRepository.findByUserId(userId));
                 }));
     }
+
 
     private Mono<CartItemRequestDTO> validateRequest(CartItemRequestDTO request) {
         return Mono.just(request)
@@ -102,7 +180,7 @@ public class CartServiceImpl implements CartService {
                 .then(Mono.just(cart));
     }
 
-    private Mono<CartItem> createNewCartItem(Integer cartId, CartItemRequestDTO request) {
+    private Mono<CartItem> createNewCartItem(UUID cartId, CartItemRequestDTO request) {
         return productClient.getProductById(request.productId())
                 .switchIfEmpty(Mono.error(new CartOperationException("Product not found with ID: " + request.productId())))
                 .flatMap(product -> {
@@ -117,18 +195,14 @@ public class CartServiceImpl implements CartService {
     }
 
     private Mono<Cart> removeCartItem(Cart cart, Integer productId) {
-        return cartItemRepository.findByCartId(cart.getId())
-                .filter(item -> item.getProductId().equals(productId))
-                .next()
+        return cartItemRepository.findByCartIdAndProductId(cart.getId(), productId)
                 .switchIfEmpty(Mono.error(new CartOperationException("Item with productId " + productId + " not found in cart")))
                 .flatMap(cartItemRepository::delete)
                 .then(Mono.just(cart));
     }
 
     private Mono<Cart> updateCartItemQuantity(Cart cart, CartItemRequestDTO request) {
-        return cartItemRepository.findByCartId(cart.getId())
-                .filter(item -> item.getProductId().equals(request.productId()))
-                .next()
+        return cartItemRepository.findByCartIdAndProductId(cart.getId(), request.productId())
                 .switchIfEmpty(Mono.error(new CartOperationException("Item with productId " + request.productId() + " not found in cart")))
                 .flatMap(item -> {
                     item.setQuantity(request.quantity());

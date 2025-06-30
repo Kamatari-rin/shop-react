@@ -1,11 +1,5 @@
-import axios from 'axios';
-import { OrderDetailDTO, OrderListDTO, OrderItemListDTO, CreateOrderRequestDTO } from '../types';
-
-const api = axios.create({
-    baseURL: 'http://localhost:8080',
-});
-
-const TEST_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
+import api from './api';
+import { OrderDetailDTO, OrderListDTO, OrderItemListDTO } from '../types';
 
 interface OrderQueryParams {
     status?: string;
@@ -15,7 +9,7 @@ interface OrderQueryParams {
     size?: number;
 }
 
-export const getOrders = async (params: OrderQueryParams = {}) => {
+export const getOrders = async (params: OrderQueryParams = {}): Promise<OrderListDTO> => {
     const { startDate, endDate, ...restParams } = params;
 
     const formattedParams = {
@@ -26,40 +20,28 @@ export const getOrders = async (params: OrderQueryParams = {}) => {
         size: params.size ?? 10,
     };
 
-    const response = await api.get<OrderListDTO>(`/api/orders/${TEST_USER_ID}`, {
+    const response = await api.get<OrderListDTO>('/api/orders', {
         params: formattedParams,
     });
     return response.data;
 };
 
-export const getOrderDetail = async (orderId: number) => {
-    const response = await api.get<OrderDetailDTO>(
-        `/api/orders/${TEST_USER_ID}/${orderId}`
-    );
+export const getOrderDetail = async (orderId: number): Promise<OrderDetailDTO> => {
+    const response = await api.get<OrderDetailDTO>(`/api/orders/${orderId}`);
     return response.data;
 };
 
-export const getOrderItems = async (orderId: number, page?: number, size?: number) => {
-    const response = await api.get<OrderItemListDTO>(
-        `/api/orders/${TEST_USER_ID}/${orderId}/items`,
-        {
-            params: {
-                page: page ?? 0,
-                size: size ?? 10,
-            },
-        }
-    );
+export const getOrderItems = async (orderId: number, page?: number, size?: number): Promise<OrderItemListDTO> => {
+    const response = await api.get<OrderItemListDTO>(`/api/orders/${orderId}/items`, {
+        params: {
+            page: page ?? 0,
+            size: size ?? 10,
+        },
+    });
     return response.data;
 };
 
-export const createOrder = async (request: CreateOrderRequestDTO) => {
-    const response = await api.post<OrderDetailDTO>(
-        `/api/orders/${TEST_USER_ID}`,
-        request
-    );
-    return response.data;
-};
 
-export const deleteOrder = async (orderId: number) => {
-    await api.delete(`/api/orders/${TEST_USER_ID}/${orderId}`);
+export const deleteOrder = async (orderId: number): Promise<void> => {
+    await api.delete(`/api/orders/${orderId}`);
 };

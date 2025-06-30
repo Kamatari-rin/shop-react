@@ -1,53 +1,42 @@
 import { ProductDTO } from '../../types';
-import { addItemToCart, updateItemQuantity, removeItemFromCart } from '../../api/cart';
-import { useCartStore } from '../../store';
+import { useCartStore } from '../../store/cartStore.ts';
 import { Link } from 'react-router-dom';
-
-const TEST_USER_ID = '550e8400-e29b-41d4-a716-446655440000';
+import { formatPrice } from '../../utils';
+import { toast } from 'react-toastify';
 
 interface ProductCardProps {
     product: ProductDTO;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-    const { cart, setCart } = useCartStore();
+    const { cart, addItem, removeItem, updateQuantity } = useCartStore((state) => state);
+
 
     const itemInCart = cart?.items.find((item) => item.productId === product.id);
     const quantity = itemInCart ? itemInCart.quantity : 0;
 
     const handleAddToCart = async () => {
         try {
-            const updatedCart = await addItemToCart(TEST_USER_ID, {
-                productId: product.id,
-                quantity: 1,
-            });
-            setCart(updatedCart);
+            await addItem(product.id, 1);
+            toast.success('Товар добавлен в корзину!');
         } catch (error) {
             console.error('Ошибка добавления в корзину:', error);
-            alert('Не удалось добавить товар в корзину');
+            toast.error('Не удалось добавить товар в корзину');
         }
     };
 
     const handleUpdateQuantity = async (newQuantity: number) => {
         try {
             if (newQuantity < 1) {
-                const updatedCart = await removeItemFromCart(TEST_USER_ID, product.id);
-                setCart(updatedCart);
+                await removeItem(product.id);
             } else {
-                const updatedCart = await updateItemQuantity(TEST_USER_ID, {
-                    productId: product.id,
-                    quantity: newQuantity,
-                });
-                setCart(updatedCart);
+                await updateQuantity(product.id, newQuantity);
             }
+            toast.success('Корзина обновлена!');
         } catch (error) {
             console.error('Ошибка обновления количества:', error);
-            alert('Не удалось обновить количество');
+            toast.error('Не удалось обновить количество');
         }
-    };
-
-    const formatPrice = (price: number) => {
-        return Math.floor(price).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
     };
 
     return (
@@ -74,6 +63,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                             <button
                                 onClick={() => handleUpdateQuantity(quantity - 1)}
                                 className="flex-1 px-4 py-2 bg-gray-200 rounded-l-lg hover:bg-gray-300"
+                                disabled={quantity <= 1}
                             >
                                 −
                             </button>

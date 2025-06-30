@@ -15,10 +15,10 @@ spring:
       name: OrderDetailHikariPool
       validation-query: SELECT 1
       validation-query-timeout: 3s
-  boot:
-    admin:
-      client:
-        url: http://admin-server:8081
+#  boot:
+#    admin:
+#      client:
+#        url: http://admin-server:8081
   cache:
     cache-names: healthCache
     redis:
@@ -27,6 +27,44 @@ spring:
     redis:
       host: redis
       port: 6379
+  security:
+    oauth2:
+      client:
+        registration:
+          order-service:
+            client-id: order-service
+            client-secret: AbMPyx9FD83qyBxMKRraMqEpleCGzQXm
+            authorization-grant-type: client_credentials
+            provider: keycloak
+        provider:
+          keycloak:
+            token-uri: http://keycloak:8080/realms/shop-realm/protocol/openid-connect/token
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
+
+security-config:
+  enabled: true
+  permit-all-paths:
+    - "/actuator/**"
+  client-id: frontend-client
+  jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
+  allowed-roles:
+    - "ROLE_USER"
+    - "ROLE_purchase-service"
+
+app:
+  webclient:
+    enabled: true
+    default-client-registration-id: order-service
+    client-secret: AbMPyx9FD83qyBxMKRraMqEpleCGzQXm
+    token-exchange-endpoint: http://keycloak:8080/realms/shop-realm/protocol/openid-connect/token
+    audiences:
+      - cart-service
+      - order-service
+      - product-detail
+      - wallet-service
+
 product:
   detail:
     url: http://product-detail:8080/api/products

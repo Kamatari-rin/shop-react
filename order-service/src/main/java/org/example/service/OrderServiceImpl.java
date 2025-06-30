@@ -95,7 +95,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Mono<OrderDetailDTO> createOrder(CreateOrderRequestDTO request) {
+    public Mono<OrderDetailDTO> createOrder(UUID userId, CreateOrderRequestDTO request) {
         long uniqueProductIds = request.items().stream()
                 .map(CreateOrderRequestDTO.OrderItemRequestDTO::productId)
                 .distinct()
@@ -115,10 +115,10 @@ public class OrderServiceImpl implements OrderService {
                             .collect(Collectors.toMap(ProductDetailDTO::id, p -> p));
                     List<OrderItem> orderItems = buildOrderItems(request, productMap);
                     BigDecimal totalAmount = calculateTotalAmount(orderItems);
-                    Order order = new Order(null, request.userId(), LocalDateTime.now(), OrderStatus.PENDING, totalAmount);
+                    Order order = new Order(null, userId, LocalDateTime.now(), OrderStatus.PENDING, totalAmount);
                     return saveOrderWithItems(order, orderItems);
                 })
-                .doOnSuccess(dto -> cacheManager.clearCaches(request.userId()).subscribe());
+                .doOnSuccess(dto -> cacheManager.clearCaches(userId).subscribe());
     }
 
     @Override

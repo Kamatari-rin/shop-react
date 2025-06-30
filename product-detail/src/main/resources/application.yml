@@ -24,7 +24,27 @@ spring:
     redis:
       host: redis
       port: 6379
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
 
+security-config:
+  enabled: true
+  permit-all-paths:
+    - "/actuator/**"
+    - "/api/products/**"
+  client-id: frontend-client
+  jwk-set-uri: "http://keycloak:8080/realms/shop-realm/protocol/openid-connect/certs"
+  allowed-roles:
+    - "ROLE_USER"
+    - "purchase-service"
+    - "cart-service"
+    - "order-service"
+app:
+  webclient:
+    enabled: false
 management:
   endpoints:
     web:

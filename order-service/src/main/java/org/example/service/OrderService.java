@@ -15,6 +15,6 @@ public interface OrderService {
     Mono<OrderListDTO> getOrders(UUID userId, Pageable pageable, String status, LocalDateTime startDate, LocalDateTime endDate);
     Mono<OrderDetailDTO> getOrderDetail(Integer id, UUID userId);
     Mono<OrderItemListDTO> getOrderItems(Integer orderId, UUID userId, Pageable pageable);
-    Mono<OrderDetailDTO> createOrder(CreateOrderRequestDTO request);
+    Mono<OrderDetailDTO> createOrder(UUID userId, CreateOrderRequestDTO request);
     Mono<Void> deleteOrder(Integer id, UUID userId);
 }
